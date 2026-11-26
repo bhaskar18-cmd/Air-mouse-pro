@@ -40,7 +40,13 @@ jobs:
           cache: npm
 
       - name: Set up Android SDK & accept licenses
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: |
+            cmdline-tools;latest
+            platform-tools
+            platforms;android-36
+            build-tools;35.0.0
 
       - name: Install npm dependencies
         run: |
