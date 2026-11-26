@@ -1,0 +1,8 @@
+{
+  "name": "BlueMouse",
+  "description": "Bluetooth HID wireless mouse and keyboard peripheral for Android devices using native BluetoothHidDevice API.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

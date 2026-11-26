@@ -1,0 +1,2 @@
+-keep class com.bluemouse.app.BluetoothHIDPlugin { *; }
+-keep class com.bluemouse.app.BluetoothHidManager { *; }
