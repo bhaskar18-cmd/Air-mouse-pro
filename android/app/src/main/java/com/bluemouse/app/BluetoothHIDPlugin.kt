@@ -22,6 +22,7 @@ import com.getcapacitor.annotation.ActivityCallback
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
 import com.getcapacitor.annotation.PermissionCallback
+import org.json.JSONObject
 
 @CapacitorPlugin(
     name = "BluetoothHID",
@@ -439,7 +440,7 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
             put("connectionPhase", phase)
             put("isDiscoverable", hidManager.isDiscoverable())
             put("discoverableRemainingSeconds", 0)
-            put("lastError", errorMsg)
+            put("lastError", errorMsg ?: JSONObject.NULL)
             if (dev != null) {
                 put("connectedDevice", JSObject().apply {
                     put(
@@ -452,7 +453,7 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
                     put("isConnected", true)
                 })
             } else {
-                put("connectedDevice", null as JSObject?)
+                put("connectedDevice", JSONObject.NULL)
             }
         }
         call.resolve(result)
