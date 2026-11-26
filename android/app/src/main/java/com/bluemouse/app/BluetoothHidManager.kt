@@ -31,7 +31,8 @@ class BluetoothHidManager(
     val bluetoothAdapter: BluetoothAdapter?
         get() = bluetoothManager?.adapter
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private val callbackExecutor = Executors.newSingleThreadExecutor()
+    private val reportExecutor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
 
     @Volatile
@@ -53,7 +54,23 @@ class BluetoothHidManager(
     var connectionState: String = "disconnected"
         private set
 
+    @Volatile
+    var lastError: String? = null
+        private set
+
     private var pendingRegisterAfterProxy = false
+    private var explicitUnregisterInProgress = false
+
+    private val proxyTimeoutRunnable = Runnable {
+        if (pendingRegisterAfterProxy && hidDeviceProxy == null) {
+            pendingRegisterAfterProxy = false
+            isRegistering = false
+            val msg =
+                "BluetoothHidDevice profile service did not respond. This Android device or ROM may not support Bluetooth HID Device mode."
+            lastError = msg
+            listener.onHidRegistrationChanged("failed", msg)
+        }
+    }
 
     fun hasRequiredPermissions(): Boolean {
         return getMissingPermissions().isEmpty()
@@ -104,9 +121,21 @@ class BluetoothHidManager(
         }
     }
 
+    @SuppressLint("MissingPermission")
+    fun isDiscoverable(): Boolean {
+        val adapter = bluetoothAdapter ?: return false
+        if (!hasRequiredPermissions()) return false
+        return try {
+            adapter.scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
+        } catch (_: SecurityException) {
+            false
+        }
+    }
+
     private val profileListener = object : BluetoothProfile.ServiceListener {
         override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
             if (profile == BluetoothProfile.HID_DEVICE) {
+                mainHandler.removeCallbacks(proxyTimeoutRunnable)
                 hidDeviceProxy = proxy as? BluetoothHidDevice
                 if (pendingRegisterAfterProxy) {
                     pendingRegisterAfterProxy = false
@@ -117,6 +146,7 @@ class BluetoothHidManager(
 
         override fun onServiceDisconnected(profile: Int) {
             if (profile == BluetoothProfile.HID_DEVICE) {
+                mainHandler.removeCallbacks(proxyTimeoutRunnable)
                 hidDeviceProxy = null
                 isAppRegistered = false
                 isRegistering = false
@@ -124,7 +154,11 @@ class BluetoothHidManager(
                 connectionState = "disconnected"
                 mainHandler.post {
                     listener.onHidRegistrationChanged("unregistered", null)
-                    listener.onConnectionStateChanged("disconnected", null, "HID service disconnected")
+                    listener.onConnectionStateChanged(
+                        "disconnected",
+                        null,
+                        "Android Bluetooth HID service disconnected"
+                    )
                 }
             }
         }
@@ -132,16 +166,28 @@ class BluetoothHidManager(
 
     private val hidCallback = object : BluetoothHidDevice.Callback() {
         override fun onAppStatusChanged(pluggedDevice: BluetoothDevice?, registered: Boolean) {
+            val wasRegistering = isRegistering
+            val wasExplicitUnregister = explicitUnregisterInProgress
+            explicitUnregisterInProgress = false
             isRegistering = false
             isAppRegistered = registered
+
             mainHandler.post {
                 if (registered) {
+                    lastError = null
                     listener.onHidRegistrationChanged("registered", null)
                     if (pluggedDevice != null) {
                         connectedDevice = pluggedDevice
                         connectionState = "connected"
                         listener.onConnectionStateChanged("connected", pluggedDevice, null)
                     }
+                } else if (wasRegistering && !wasExplicitUnregister) {
+                    val msg =
+                        "Bluetooth HID application registration was rejected by Android Bluetooth stack."
+                    lastError = msg
+                    connectedDevice = null
+                    connectionState = "disconnected"
+                    listener.onHidRegistrationChanged("failed", msg)
                 } else {
                     connectedDevice = null
                     connectionState = "disconnected"
@@ -155,11 +201,13 @@ class BluetoothHidManager(
             mainHandler.post {
                 when (state) {
                     BluetoothProfile.STATE_CONNECTED -> {
+                        lastError = null
                         connectedDevice = device
                         connectionState = "connected"
                         listener.onConnectionStateChanged("connected", device, null)
                     }
                     BluetoothProfile.STATE_CONNECTING -> {
+                        lastError = null
                         connectionState = "connecting"
                         listener.onConnectionStateChanged("connecting", device, null)
                     }
@@ -173,9 +221,12 @@ class BluetoothHidManager(
                         connectedDevice = null
                         connectionState = if (wasConnecting) "failed" else "disconnected"
                         val reason = if (wasConnecting) {
-                            "Host rejected or timed out during HID connection"
+                            "Host rejected or timed out during HID connection. Ensure Bluetooth is paired and host supports HID input."
                         } else {
                             null
+                        }
+                        if (wasConnecting) {
+                            lastError = reason
                         }
                         listener.onConnectionStateChanged(
                             if (wasConnecting) "failed" else "disconnected",
@@ -204,14 +255,22 @@ class BluetoothHidManager(
         }
 
         override fun onSetReport(device: BluetoothDevice?, type: Byte, id: Byte, data: ByteArray?) {
-            // Optional LED status updates from host
+            // Host LED status updates (NumLock/CapsLock/ScrollLock) arrive here
+        }
+
+        override fun onSetProtocol(device: BluetoothDevice?, protocol: Byte) {
+            // Standard HID Report Protocol negotiation handled by BluetoothHidDevice
         }
 
         override fun onVirtualCableUnplug(device: BluetoothDevice?) {
             connectedDevice = null
             connectionState = "disconnected"
             mainHandler.post {
-                listener.onConnectionStateChanged("disconnected", device, "Host unplugged virtual HID cable")
+                listener.onConnectionStateChanged(
+                    "disconnected",
+                    device,
+                    "Host unplugged virtual HID cable"
+                )
             }
         }
     }
@@ -223,17 +282,29 @@ class BluetoothHidManager(
     }
 
     fun registerApp(): Pair<Boolean, String?> {
-        val adapter = bluetoothAdapter ?: return Pair(false, "Bluetooth adapter unavailable")
+        val adapter = bluetoothAdapter ?: run {
+            lastError = "Bluetooth hardware adapter unavailable"
+            return Pair(false, lastError)
+        }
         if (!hasRequiredPermissions()) {
-            return Pair(false, "Missing Bluetooth runtime permissions")
+            lastError = "Missing Bluetooth runtime permissions"
+            return Pair(false, lastError)
         }
         if (!adapter.isEnabled) {
-            return Pair(false, "Bluetooth is disabled")
+            lastError = "Bluetooth is disabled"
+            return Pair(false, lastError)
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            lastError = "Android 9 (API 28) or higher is required for BluetoothHidDevice"
+            return Pair(false, lastError)
         }
         if (isAppRegistered) {
+            lastError = null
             return Pair(true, null)
         }
 
+        lastError = null
+        explicitUnregisterInProgress = false
         isRegistering = true
         listener.onHidRegistrationChanged("registering", null)
 
@@ -243,9 +314,13 @@ class BluetoothHidManager(
             if (!ok) {
                 isRegistering = false
                 pendingRegisterAfterProxy = false
-                listener.onHidRegistrationChanged("failed", "Device does not support BluetoothHidDevice profile")
-                return Pair(false, "BluetoothHidDevice profile unsupported on this Android firmware")
+                val msg = "BluetoothHidDevice profile unsupported on this Android hardware/ROM"
+                lastError = msg
+                listener.onHidRegistrationChanged("failed", msg)
+                return Pair(false, msg)
             }
+            mainHandler.removeCallbacks(proxyTimeoutRunnable)
+            mainHandler.postDelayed(proxyTimeoutRunnable, 3000L)
             return Pair(true, null)
         }
 
@@ -256,7 +331,8 @@ class BluetoothHidManager(
     private fun registerHidAppInternal(): Pair<Boolean, String?> {
         val proxy = hidDeviceProxy ?: run {
             isRegistering = false
-            return Pair(false, "HID profile proxy unavailable")
+            lastError = "HID profile proxy unavailable"
+            return Pair(false, lastError)
         }
 
         val sdpSettings = BluetoothHidDeviceAppSdpSettings(
@@ -276,11 +352,13 @@ class BluetoothHidManager(
             BluetoothHidDeviceAppQosSettings.MAX
         )
 
-        val started = proxy.registerApp(sdpSettings, null, outQos, executor, hidCallback)
+        val started = proxy.registerApp(sdpSettings, null, outQos, callbackExecutor, hidCallback)
         if (!started) {
             isRegistering = false
-            listener.onHidRegistrationChanged("failed", "registerApp() returned false")
-            return Pair(false, "BluetoothHidDevice.registerApp() failed")
+            val msg = "BluetoothHidDevice.registerApp() returned false"
+            lastError = msg
+            listener.onHidRegistrationChanged("failed", msg)
+            return Pair(false, msg)
         }
         return Pair(true, null)
     }
@@ -289,12 +367,14 @@ class BluetoothHidManager(
     fun unregisterApp(): Boolean {
         val proxy = hidDeviceProxy ?: return false
         if (!hasRequiredPermissions()) return false
-        releaseAllInputs()
+        explicitUnregisterInProgress = true
+        releaseAllInputsSync()
         val result = proxy.unregisterApp()
         isAppRegistered = false
         isRegistering = false
         connectedDevice = null
         connectionState = "disconnected"
+        lastError = null
         listener.onHidRegistrationChanged("unregistered", null)
         return result
     }
@@ -303,7 +383,11 @@ class BluetoothHidManager(
     fun getBondedDevices(): List<BluetoothDevice> {
         val adapter = bluetoothAdapter ?: return emptyList()
         if (!hasRequiredPermissions()) return emptyList()
-        return adapter.bondedDevices?.toList() ?: emptyList()
+        return try {
+            adapter.bondedDevices?.toList() ?: emptyList()
+        } catch (_: SecurityException) {
+            emptyList()
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -319,13 +403,17 @@ class BluetoothHidManager(
             return Pair(false, "Invalid Bluetooth MAC address")
         }
 
+        lastError = null
         connectionState = "connecting"
         listener.onConnectionStateChanged("connecting", target, null)
         val initiated = proxy.connect(target)
         if (!initiated) {
+            val msg =
+                "Failed to initiate HID connection to $address. Ensure the host is awake and paired as an HID receiver."
+            lastError = msg
             connectionState = "failed"
-            listener.onConnectionStateChanged("failed", target, "BluetoothHidDevice.connect() returned false")
-            return Pair(false, "Failed to initiate HID connection to $address")
+            listener.onConnectionStateChanged("failed", target, msg)
+            return Pair(false, msg)
         }
         return Pair(true, null)
     }
@@ -335,7 +423,7 @@ class BluetoothHidManager(
         val proxy = hidDeviceProxy ?: return false
         val target = connectedDevice ?: return false
         if (!hasRequiredPermissions()) return false
-        releaseAllInputs()
+        releaseAllInputsSync()
         return proxy.disconnect(target)
     }
 
@@ -343,7 +431,7 @@ class BluetoothHidManager(
     fun sendMouseReport(buttons: Int, dx: Int, dy: Int, wheel: Int, hWheel: Int): Boolean {
         val proxy = hidDeviceProxy ?: return false
         val target = connectedDevice ?: return false
-        if (!isAppRegistered || !hasRequiredPermissions()) return false
+        if (!isAppRegistered || !hasRequiredPermissions() || reportExecutor.isShutdown) return false
 
         val report = byteArrayOf(
             (buttons and 0x07).toByte(),
@@ -352,14 +440,20 @@ class BluetoothHidManager(
             wheel.coerceIn(-127, 127).toByte(),
             hWheel.coerceIn(-127, 127).toByte()
         )
-        return proxy.sendReport(target, HidReportDescriptor.REPORT_ID_MOUSE, report)
+        reportExecutor.execute {
+            try {
+                proxy.sendReport(target, HidReportDescriptor.REPORT_ID_MOUSE, report)
+            } catch (_: SecurityException) {
+            }
+        }
+        return true
     }
 
     @SuppressLint("MissingPermission")
     fun sendKeyboardReport(modifiers: Int, keycodes: List<Int>): Boolean {
         val proxy = hidDeviceProxy ?: return false
         val target = connectedDevice ?: return false
-        if (!isAppRegistered || !hasRequiredPermissions()) return false
+        if (!isAppRegistered || !hasRequiredPermissions() || reportExecutor.isShutdown) return false
 
         val report = ByteArray(8)
         report[0] = (modifiers and 0xFF).toByte()
@@ -367,7 +461,25 @@ class BluetoothHidManager(
         for (i in 0 until 6) {
             report[2 + i] = ((keycodes.getOrNull(i) ?: 0) and 0xFF).toByte()
         }
-        return proxy.sendReport(target, HidReportDescriptor.REPORT_ID_KEYBOARD, report)
+        reportExecutor.execute {
+            try {
+                proxy.sendReport(target, HidReportDescriptor.REPORT_ID_KEYBOARD, report)
+            } catch (_: SecurityException) {
+            }
+        }
+        return true
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun releaseAllInputsSync() {
+        val proxy = hidDeviceProxy ?: return
+        val target = connectedDevice ?: return
+        if (!isAppRegistered || !hasRequiredPermissions()) return
+        try {
+            proxy.sendReport(target, HidReportDescriptor.REPORT_ID_MOUSE, ByteArray(5))
+            proxy.sendReport(target, HidReportDescriptor.REPORT_ID_KEYBOARD, ByteArray(8))
+        } catch (_: SecurityException) {
+        }
     }
 
     fun releaseAllInputs() {
@@ -375,14 +487,20 @@ class BluetoothHidManager(
         sendKeyboardReport(0, emptyList())
     }
 
+    fun clearLastError() {
+        lastError = null
+    }
+
     fun close() {
-        releaseAllInputs()
+        mainHandler.removeCallbacks(proxyTimeoutRunnable)
+        releaseAllInputsSync()
         val adapter = bluetoothAdapter
         val proxy = hidDeviceProxy
         if (adapter != null && proxy != null) {
             adapter.closeProfileProxy(BluetoothProfile.HID_DEVICE, proxy)
         }
         hidDeviceProxy = null
-        executor.shutdownNow()
+        reportExecutor.shutdownNow()
+        callbackExecutor.shutdownNow()
     }
 }

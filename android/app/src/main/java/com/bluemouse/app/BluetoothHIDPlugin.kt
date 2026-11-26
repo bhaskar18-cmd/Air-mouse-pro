@@ -49,6 +49,7 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
     private var receiverRegistered = false
 
     private val bluetoothReceiver = object : BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 BluetoothAdapter.ACTION_STATE_CHANGED -> {
@@ -56,6 +57,61 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
                         put("state", hidManager.getBluetoothHardwareState())
                     }
                     notifyListeners("bluetoothStateChanged", data)
+                }
+                BluetoothAdapter.ACTION_SCAN_MODE_CHANGED -> {
+                    val scanMode = intent.getIntExtra(
+                        BluetoothAdapter.EXTRA_SCAN_MODE,
+                        BluetoothAdapter.SCAN_MODE_NONE
+                    )
+                    val data = JSObject().apply {
+                        put(
+                            "isDiscoverable",
+                            scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
+                        )
+                    }
+                    notifyListeners("discoverabilityChanged", data)
+                }
+                BluetoothDevice.ACTION_BOND_STATE_CHANGED -> {
+                    val bondState = intent.getIntExtra(
+                        BluetoothDevice.EXTRA_BOND_STATE,
+                        BluetoothDevice.BOND_NONE
+                    )
+                    val prevBondState = intent.getIntExtra(
+                        BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE,
+                        BluetoothDevice.BOND_NONE
+                    )
+                    val device: BluetoothDevice? =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            intent.getParcelableExtra(
+                                BluetoothDevice.EXTRA_DEVICE,
+                                BluetoothDevice::class.java
+                            )
+                        } else {
+                            @Suppress("DEPRECATION")
+                            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                        }
+
+                    val bondLabel = when (bondState) {
+                        BluetoothDevice.BOND_BONDED -> "bonded"
+                        BluetoothDevice.BOND_BONDING -> "bonding"
+                        else -> if (prevBondState == BluetoothDevice.BOND_BONDING) "cancelled" else "none"
+                    }
+
+                    val data = JSObject().apply {
+                        put("bondState", bondLabel)
+                        if (device != null) {
+                            put("device", JSObject().apply {
+                                put(
+                                    "name",
+                                    if (hidManager.hasRequiredPermissions()) device.name ?: "Bluetooth Host"
+                                    else "Bluetooth Host"
+                                )
+                                put("address", device.address)
+                                put("bondState", bondLabel)
+                            })
+                        }
+                    }
+                    notifyListeners("bondStateChanged", data)
                 }
             }
         }
@@ -69,9 +125,13 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
 
     private fun registerBluetoothReceiver() {
         if (receiverRegistered) return
-        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        val filter = IntentFilter().apply {
+            addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+            addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
+            addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(bluetoothReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            context.registerReceiver(bluetoothReceiver, filter, Context.RECEIVER_EXPORTED)
         } else {
             context.registerReceiver(bluetoothReceiver, filter)
         }
@@ -81,6 +141,10 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
     override fun handleOnResume() {
         super.handleOnResume()
         hidManager.ensureProxy()
+        notifyListeners(
+            "bluetoothStateChanged",
+            JSObject().apply { put("state", hidManager.getBluetoothHardwareState()) }
+        )
     }
 
     override fun handleOnPause() {
@@ -118,7 +182,11 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
             put("state", state)
             if (device != null) {
                 val devObj = JSObject().apply {
-                    put("name", if (hidManager.hasRequiredPermissions()) device.name ?: "Bluetooth Host" else "Bluetooth Host")
+                    put(
+                        "name",
+                        if (hidManager.hasRequiredPermissions()) device.name ?: "Bluetooth Host"
+                        else "Bluetooth Host"
+                    )
                     put("address", device.address)
                     put("bondState", "bonded")
                     put("isConnected", state == "connected")
@@ -178,6 +246,7 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
     private fun bluetoothPermissionCallback(call: PluginCall) {
         val missing = hidManager.getMissingPermissions()
         if (missing.isEmpty()) {
+            hidManager.clearLastError()
             hidManager.ensureProxy()
         }
         call.resolve(JSObject().apply {
@@ -351,11 +420,12 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
             else -> "unregistered"
         }
         val dev = hidManager.connectedDevice
+        val errorMsg = hidManager.lastError
         val phase = when {
             btState == "disabled" || btState == "turning_off" -> "bluetooth_disabled"
             hidManager.connectionState == "connected" && dev != null -> "connected"
             hidManager.connectionState == "connecting" -> "pairing_in_progress"
-            hidManager.connectionState == "failed" -> "connection_failed"
+            hidManager.connectionState == "failed" || errorMsg != null -> "connection_failed"
             hidState == "registering" -> "hid_pending"
             hidState == "registered" -> "waiting_for_pairing"
             btState == "enabled" -> "bluetooth_enabled"
@@ -367,12 +437,16 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
             put("bluetoothState", btState)
             put("hidState", hidState)
             put("connectionPhase", phase)
-            put("isDiscoverable", false)
+            put("isDiscoverable", hidManager.isDiscoverable())
             put("discoverableRemainingSeconds", 0)
-            put("lastError", null as String?)
+            put("lastError", errorMsg)
             if (dev != null) {
                 put("connectedDevice", JSObject().apply {
-                    put("name", if (hidManager.hasRequiredPermissions()) dev.name ?: "Bluetooth Host" else "Bluetooth Host")
+                    put(
+                        "name",
+                        if (hidManager.hasRequiredPermissions()) deviceNameSafe(dev)
+                        else "Bluetooth Host"
+                    )
                     put("address", dev.address)
                     put("bondState", "bonded")
                     put("isConnected", true)
@@ -382,5 +456,14 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
             }
         }
         call.resolve(result)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun deviceNameSafe(device: BluetoothDevice): String {
+        return try {
+            device.name ?: "Bluetooth Host"
+        } catch (_: SecurityException) {
+            "Bluetooth Host"
+        }
     }
 }

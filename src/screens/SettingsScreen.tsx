@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import {
+  Check,
   CheckSquare,
+  Copy,
   FileCode2,
   HelpCircle,
   Moon,
@@ -24,14 +26,19 @@ interface SettingsScreenProps {
   settings: BlueMouseSettings;
   onUpdateSettings: (patch: Partial<BlueMouseSettings>) => void;
   onOpenOnboarding: () => void;
+  onOpenApkGuide: () => void;
+  onNotify: (tone: 'success' | 'info' | 'error', message: string) => void;
 }
 
 export function SettingsScreen({
   settings,
   onUpdateSettings,
   onOpenOnboarding,
+  onOpenApkGuide,
+  onNotify,
 }: SettingsScreenProps) {
   const [checklist, setChecklist] = useState<TestingChecklistItem[]>(() => loadTestingChecklist());
+  const [copiedCmds, setCopiedCmds] = useState(false);
 
   const toggleChecklistItem = (id: string) => {
     setChecklist((prev) => {
@@ -46,6 +53,7 @@ export function SettingsScreen({
   const resetChecklist = () => {
     setChecklist(DEFAULT_TESTING_CHECKLIST);
     saveTestingChecklist(DEFAULT_TESTING_CHECKLIST);
+    onNotify('success', 'Testing checklist reset.');
   };
 
   const completedCount = checklist.filter((c) => c.completed).length;
@@ -319,7 +327,10 @@ export function SettingsScreen({
       </div>
 
       {/* Physical Device Testing Checklist (12 Requirements) */}
-      <section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6">
+      <section
+        id="testing-checklist-section"
+        className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -374,11 +385,21 @@ export function SettingsScreen({
 
       {/* Setup, Build & APK Generation Instructions */}
       <section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6 space-y-4">
-        <div className="flex items-center gap-2.5">
-          <Terminal className="h-5 w-5 text-blue-600 dark:text-cyan-400" />
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Android Setup, Build &amp; APK Generation
-          </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Terminal className="h-5 w-5 text-blue-600 dark:text-cyan-400" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Android Setup, Build &amp; APK Generation
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenApkGuide}
+            className="min-h-[40px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold whitespace-nowrap transition-colors"
+          >
+            Open Interactive APK Build Guide
+          </button>
         </div>
 
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -392,7 +413,35 @@ export function SettingsScreen({
           complete the final APK compilation in Android Studio or Gradle:
         </p>
 
-        <div className="rounded-2xl bg-slate-950 text-slate-100 p-4 font-mono text-xs overflow-x-auto space-y-1.5">
+        <div className="rounded-2xl bg-slate-950 text-slate-100 p-4 font-mono text-xs overflow-x-auto space-y-1.5 relative">
+          <button
+            type="button"
+            onClick={async () => {
+              const snippet =
+                'npm install && npm run build\nnpx cap sync android\nnpx cap open android\ncd android && ./gradlew assembleDebug';
+              try {
+                await navigator.clipboard.writeText(snippet);
+                setCopiedCmds(true);
+                onNotify('success', 'Build commands copied to clipboard.');
+                window.setTimeout(() => setCopiedCmds(false), 2000);
+              } catch {
+                onNotify('error', 'Clipboard access blocked. Copy commands manually.');
+              }
+            }}
+            className="absolute top-3 right-3 min-h-[30px] px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-sans text-xs font-medium flex items-center gap-1.5"
+          >
+            {copiedCmds ? (
+              <>
+                <Check className="h-3.5 w-3.5 text-emerald-400" />
+                <span className="text-emerald-400">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5" />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
           <p className="text-cyan-400"># 1. Install dependencies and build production web bundle</p>
           <p>npm install &amp;&amp; npm run build</p>
           <p className="text-cyan-400 pt-2"># 2. Sync web assets into native Android project</p>

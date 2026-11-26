@@ -7,6 +7,7 @@ import {
   ArrowUp,
   CornerDownLeft,
   Delete,
+  Loader2,
   Send,
 } from 'lucide-react';
 import {
@@ -21,6 +22,7 @@ import { bluetoothService } from '../services/bluetoothService';
 interface VirtualKeyboardProps {
   hapticEnabled: boolean;
   compact?: boolean;
+  isConnected?: boolean;
 }
 
 interface KeyDef {
@@ -121,7 +123,11 @@ const NAV_KEYS: KeyDef[] = [
   { label: 'PrtSc', keycode: HID_KEY.PRINT_SCREEN },
 ];
 
-export function VirtualKeyboard({ hapticEnabled, compact = false }: VirtualKeyboardProps) {
+export function VirtualKeyboard({
+  hapticEnabled,
+  compact = false,
+  isConnected = false,
+}: VirtualKeyboardProps) {
   const [layoutMode, setLayoutMode] = useState<'qwerty' | 'symbols'>('qwerty');
   const [showFnRow, setShowFnRow] = useState(!compact);
   const [shiftLatched, setShiftLatched] = useState(false);
@@ -131,6 +137,7 @@ export function VirtualKeyboard({ hapticEnabled, compact = false }: VirtualKeybo
   const [textInput, setTextInput] = useState('');
   const [unicodeWarning, setUnicodeWarning] = useState<string | null>(null);
   const [sendingText, setSendingText] = useState(false);
+  const [lastActionHint, setLastActionHint] = useState<string | null>(null);
 
   const effectiveShift = (heldModifiers & KEY_MOD_LSHIFT) !== 0 || shiftLatched;
   const uppercase = effectiveShift !== capsActive;
@@ -139,8 +146,17 @@ export function VirtualKeyboard({ hapticEnabled, compact = false }: VirtualKeybo
     setPressedKeycodes([]);
     setHeldModifiers(0);
     setShiftLatched(false);
+    setLastActionHint('All keys & modifiers released');
     void bluetoothService.releaseAllKeys();
   }, []);
+
+  useEffect(() => {
+    if (!isConnected) {
+      setPressedKeycodes([]);
+      setHeldModifiers(0);
+      setShiftLatched(false);
+    }
+  }, [isConnected]);
 
   useEffect(() => {
     const onBlur = () => releaseAllSafe();
@@ -222,7 +238,8 @@ export function VirtualKeyboard({ hapticEnabled, compact = false }: VirtualKeybo
     setSendingText(true);
     try {
       await bluetoothService.triggerHaptic(hapticEnabled, 'medium');
-      await bluetoothService.sendTextString(textInput);
+      const { sentCount } = await bluetoothService.sendTextString(textInput);
+      setLastActionHint(`Formatted ${sentCount} HID key event${sentCount === 1 ? '' : 's'}`);
       setTextInput('');
     } finally {
       setSendingText(false);
@@ -329,6 +346,7 @@ export function VirtualKeyboard({ hapticEnabled, compact = false }: VirtualKeybo
             onClick={async () => {
               await bluetoothService.triggerHaptic(hapticEnabled, 'medium');
               await bluetoothService.sendShortcut(sc.modifiers, sc.keycodes);
+              setLastActionHint(`Triggered ${sc.label} (${sc.description})`);
             }}
             className="min-h-[38px] px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] hover:border-blue-500/50 text-xs font-mono font-medium text-slate-700 dark:text-cyan-300 shrink-0 whitespace-nowrap transition-colors active:scale-95"
           >
@@ -336,6 +354,12 @@ export function VirtualKeyboard({ hapticEnabled, compact = false }: VirtualKeybo
           </button>
         ))}
       </div>
+
+      {lastActionHint && (
+        <p className="text-xs font-mono text-blue-600 dark:text-cyan-400 px-1">
+          {lastActionHint}
+        </p>
+      )}
 
       {/* Type & Send Text Bar (US QWERTY verification) */}
       {!compact && (
@@ -363,8 +387,12 @@ export function VirtualKeyboard({ hapticEnabled, compact = false }: VirtualKeybo
             disabled={sendingText || !textInput.trim()}
             className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-colors"
           >
-            <Send className="h-4 w-4" />
-            <span>Send</span>
+            {sendingText ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            <span>{sendingText ? 'Sending...' : 'Send'}</span>
           </button>
         </form>
       )}

@@ -11609,6 +11609,26 @@ var Bluetooth = createLucideIcon("bluetooth", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Check = createLucideIcon("check", [["path", {
+	d: "M20 6 9 17l-5-5",
+	key: "1gmf2c"
+}]]);
+/**
+* @license lucide-react v0.546.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var ChevronLeft = createLucideIcon("chevron-left", [["path", {
+	d: "m15 18-6-6 6-6",
+	key: "1wnfg3"
+}]]);
+/**
+* @license lucide-react v0.546.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var ChevronRight = createLucideIcon("chevron-right", [["path", {
 	d: "m9 18 6-6-6-6",
 	key: "mthhwq"
@@ -11684,6 +11704,24 @@ var CircleQuestionMark = createLucideIcon("circle-question-mark", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Copy = createLucideIcon("copy", [["rect", {
+	width: "14",
+	height: "14",
+	x: "8",
+	y: "8",
+	rx: "2",
+	ry: "2",
+	key: "17jyea"
+}], ["path", {
+	d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
+	key: "zix9uf"
+}]]);
+/**
+* @license lucide-react v0.546.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var CornerDownLeft = createLucideIcon("corner-down-left", [["path", {
 	d: "M20 4v7a4 4 0 0 1-4 4H4",
 	key: "6o5b7l"
@@ -11709,6 +11747,26 @@ var Delete = createLucideIcon("delete", [
 	["path", {
 		d: "m18 9-6 6",
 		key: "1fp51s"
+	}]
+]);
+/**
+* @license lucide-react v0.546.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Download = createLucideIcon("download", [
+	["path", {
+		d: "M12 15V3",
+		key: "m9g1x1"
+	}],
+	["path", {
+		d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",
+		key: "ih7n3h"
+	}],
+	["path", {
+		d: "m7 10 5 5 5-5",
+		key: "brsn70"
 	}]
 ]);
 /**
@@ -11753,6 +11811,32 @@ var FileCode2 = createLucideIcon("file-code-2", [
 	["path", {
 		d: "m9 18 3-3-3-3",
 		key: "112psh"
+	}]
+]);
+/**
+* @license lucide-react v0.546.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var FolderArchive = createLucideIcon("folder-archive", [
+	["circle", {
+		cx: "15",
+		cy: "19",
+		r: "2",
+		key: "u2pros"
+	}],
+	["path", {
+		d: "M20.9 19.8A2 2 0 0 0 22 18V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h5.1",
+		key: "1jj40k"
+	}],
+	["path", {
+		d: "M15 11v-1",
+		key: "cntcp"
+	}],
+	["path", {
+		d: "M15 17v-2",
+		key: "1279jj"
 	}]
 ]);
 /**
@@ -12040,6 +12124,37 @@ var MousePointerClick = createLucideIcon("mouse-pointer-click", [
 	["path", {
 		d: "M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z",
 		key: "s0h3yz"
+	}]
+]);
+/**
+* @license lucide-react v0.546.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var PackageCheck = createLucideIcon("package-check", [
+	["path", {
+		d: "m16 16 2 2 4-4",
+		key: "gfu2re"
+	}],
+	["path", {
+		d: "M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14",
+		key: "e7tb2h"
+	}],
+	["path", {
+		d: "m7.5 4.27 9 5.15",
+		key: "1c824w"
+	}],
+	["polyline", {
+		points: "3.29 7 12 12 20.71 7",
+		key: "ousv84"
+	}],
+	["line", {
+		x1: "12",
+		x2: "12",
+		y1: "22",
+		y2: "12",
+		key: "a4e8g8"
 	}]
 ]);
 /**
@@ -12403,6 +12518,16 @@ var TriangleAlert = createLucideIcon("triangle-alert", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Wrench = createLucideIcon("wrench", [["path", {
+	d: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z",
+	key: "1ngwbx"
+}]]);
+/**
+* @license lucide-react v0.546.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var X = createLucideIcon("x", [["path", {
 	d: "M18 6 6 18",
 	key: "1bl5f8"
@@ -12538,6 +12663,613 @@ function BlueMouseLogo({ size = 36, className = "" }) {
 				strokeLinejoin: "round"
 			})
 		]
+	});
+}
+// src/components/ApkBuildGuideModal.tsx
+var GUIDE_STEPS = [
+	{
+		id: "export",
+		number: 1,
+		shortTitle: "Export Project",
+		title: "1. Export the Complete BlueMouse Project",
+		subtitle: "Download all React, Capacitor, and native Android Kotlin source files",
+		icon: FolderArchive
+	},
+	{
+		id: "capacitor",
+		number: 2,
+		shortTitle: "Capacitor",
+		title: "2. Capacitor Installation & Configuration",
+		subtitle: "Install packages, build the web bundle, and sync the Android platform",
+		icon: Terminal
+	},
+	{
+		id: "studio",
+		number: 3,
+		shortTitle: "Android Studio",
+		title: "3. Android Studio & SDK Setup",
+		subtitle: "Configure JDK 21, Android SDK 36, and Gradle sync",
+		icon: Wrench
+	},
+	{
+		id: "kotlin",
+		number: 4,
+		shortTitle: "Kotlin HID",
+		title: "4. Kotlin Bluetooth HID Plugin Integration",
+		subtitle: "Verify native BluetoothHidDevice classes, SDP descriptor, and permissions",
+		icon: FileCode2
+	},
+	{
+		id: "apk",
+		number: 5,
+		shortTitle: "Build APK",
+		title: "5. APK Generation & Device Installation",
+		subtitle: "Compile debug/release APKs and deploy to a physical Android 9+ smartphone",
+		icon: PackageCheck
+	}
+];
+function CopyCodeBlock({ label, code, copiedId, id, onCopy }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "flex items-center justify-between px-4 py-2 border-b border-slate-800/80 bg-slate-900/70",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "text-xs font-medium text-slate-300",
+				children: label
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				onClick: () => onCopy(id, code),
+				className: "min-h-[30px] px-2.5 rounded-lg text-xs font-medium text-cyan-300 hover:bg-slate-800 flex items-center gap-1.5 transition-colors",
+				children: copiedId === id ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { className: "h-3.5 w-3.5 text-emerald-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "text-emerald-400",
+					children: "Copied"
+				})] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, { className: "h-3.5 w-3.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Copy" })] })
+			})]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
+			className: "p-4 text-xs font-mono text-slate-100 overflow-x-auto leading-relaxed",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", { children: code })
+		})]
+	});
+}
+function ApkBuildGuideModal({ open, onClose, onOpenChecklist }) {
+	const [activeStepIndex, setActiveStepIndex] = (0, import_react.useState)(0);
+	const [copiedId, setCopiedId] = (0, import_react.useState)(null);
+	const [copyError, setCopyError] = (0, import_react.useState)(null);
+	if (!open) return null;
+	const activeStep = GUIDE_STEPS[activeStepIndex];
+	const handleCopy = async (id, text) => {
+		setCopyError(null);
+		try {
+			await navigator.clipboard.writeText(text);
+			setCopiedId(id);
+			window.setTimeout(() => {
+				setCopiedId((prev) => prev === id ? null : prev);
+			}, 2e3);
+		} catch {
+			setCopyError("Clipboard access was blocked by your browser. Please select and copy the command manually.");
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-3 sm:p-5",
+		role: "dialog",
+		"aria-modal": "true",
+		"aria-labelledby": "apk-guide-title",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "flex items-center justify-between gap-4 px-5 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex items-center gap-3 min-w-0",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BlueMouseLogo, {
+							size: 36,
+							className: "shrink-0"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "min-w-0",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "text-xs font-semibold text-blue-600 dark:text-cyan-400",
+								children: "Native Android Build & Deployment Guide"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+								id: "apk-guide-title",
+								className: "text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate",
+								children: activeStep.title
+							})]
+						})]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						type: "button",
+						onClick: onClose,
+						className: "min-h-[42px] min-w-[42px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0",
+						"aria-label": "Close Android Build Guide",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: "h-5 w-5" })
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "px-5 sm:px-6 py-3 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-[#081020] overflow-x-auto shrink-0",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "flex items-center gap-2 min-w-max",
+						children: GUIDE_STEPS.map((step, idx) => {
+							const Icon = step.icon;
+							return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+								type: "button",
+								onClick: () => setActiveStepIndex(idx),
+								className: `min-h-[38px] px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors whitespace-nowrap ${idx === activeStepIndex ? "bg-blue-600 text-white shadow-sm" : "bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`,
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, { className: "h-3.5 w-3.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+									step.number,
+									". ",
+									step.shortTitle
+								] })]
+							}, step.id);
+						})
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "flex-1 overflow-y-auto p-5 sm:p-6 space-y-5",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-sm text-slate-600 dark:text-slate-300",
+							children: activeStep.subtitle
+						}),
+						copyError && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-200",
+							children: copyError
+						}),
+						activeStep.id === "export" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "space-y-4",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", {
+										className: "text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, { className: "h-4 w-4 text-blue-600 dark:text-cyan-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Step-by-Step Project Export" })]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ol", {
+										className: "space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+												"Download or export the complete project archive from AI Studio (or clone your connected repository) to a local folder such as ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+													className: "font-mono",
+													children: "bluemouse/"
+												}),
+												"."
+											] }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Verify that all root configuration, React frontend, and native Android files are present before installing dependencies." }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+												"Ensure ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Node.js 20+" }),
+												" and ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "npm 10+" }),
+												" are installed on your workstation."
+											] })
+										]
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-2",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
+										className: "text-xs font-semibold text-slate-800 dark:text-slate-200",
+										children: "Required Project Tree Checklist"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", {
+										className: "grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-600 dark:text-slate-300",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+												className: "flex items-center gap-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-3.5 w-3.5 text-emerald-500 shrink-0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "package.json & capacitor.config.ts" })]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+												className: "flex items-center gap-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-3.5 w-3.5 text-emerald-500 shrink-0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "src/ (React UI, HID utils, Bridge)" })]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+												className: "flex items-center gap-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-3.5 w-3.5 text-emerald-500 shrink-0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "android/app/src/main/AndroidManifest.xml" })]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+												className: "flex items-center gap-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-3.5 w-3.5 text-emerald-500 shrink-0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "android/app/src/main/java/com/bluemouse/app/*.kt" })]
+											})
+										]
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyCodeBlock, {
+									id: "cmd-export-install",
+									label: "Install project dependencies in the exported folder",
+									code: `cd bluemouse\nnode -v && npm -v\nnpm install`,
+									copiedId,
+									onCopy: handleCopy
+								})
+							]
+						}),
+						activeStep.id === "capacitor" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "space-y-4",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+										"BlueMouse already includes ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "@capacitor/core"
+										}),
+										",",
+										" ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "@capacitor/cli"
+										}),
+										",",
+										" ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "@capacitor/android"
+										}),
+										",",
+										" ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "@capacitor/app"
+										}),
+										", and",
+										" ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "@capacitor/haptics"
+										}),
+										" in",
+										" ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "package.json"
+										}),
+										", along with",
+										" ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "capacitor.config.ts"
+										}),
+										"."
+									] }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+										"If you are migrating into a fresh Capacitor workspace, install those packages first, then compile the Vite bundle (",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "dist/"
+										}),
+										") and sync assets into ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+											className: "font-mono",
+											children: "android/"
+										}),
+										"."
+									] })]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyCodeBlock, {
+									id: "cmd-cap-install",
+									label: "Capacitor packages & platform sync commands",
+									code: `# Only needed if initializing Capacitor in a fresh project:\nnpm install @capacitor/core @capacitor/android @capacitor/app @capacitor/haptics\nnpm install -D @capacitor/cli\n\n# Build production web assets and sync into Android:\nnpm run build\nnpx cap sync android`,
+									copiedId,
+									onCopy: handleCopy
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyCodeBlock, {
+									id: "cfg-cap-ts",
+									label: "capacitor.config.ts (already configured)",
+									code: `import type { CapacitorConfig } from '@capacitor/cli';\n\nconst config: CapacitorConfig = {\n  appId: 'com.bluemouse.app',\n  appName: 'BlueMouse',\n  webDir: 'dist',\n  android: {\n    allowMixedContent: false,\n    backgroundColor: '#050914',\n  },\n};\n\nexport default config;`,
+									copiedId,
+									onCopy: handleCopy
+								})
+							]
+						}),
+						activeStep.id === "studio" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "space-y-4",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", {
+									className: "text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Laptop, { className: "h-4 w-4 text-blue-600 dark:text-cyan-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Android Studio & SDK Requirements" })]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ol", {
+									className: "space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											"Install ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Android Studio" }),
+											" (Ladybug or newer) with",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "JDK 21" }),
+											" selected under",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("em", { children: "Settings → Build, Execution, Deployment → Build Tools → Gradle" }),
+											"."
+										] }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											"Open ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "SDK Manager" }),
+											" and install",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Android SDK Platform 36" }),
+											", ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Android SDK Build-Tools" }),
+											", and ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Platform-Tools (adb)" }),
+											"."
+										] }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											"Note ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "minSdkVersion = 28"
+											}),
+											" (Android 9.0 Pie), because Android introduced ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "BluetoothHidDevice"
+											}),
+											" ",
+											"in API 28."
+										] }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											"On your physical Android phone, enable ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Developer Options" }),
+											" and",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "USB Debugging" }),
+											". (Android Emulators cannot emulate physical Bluetooth HID hardware.)"
+										] })
+									]
+								})]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyCodeBlock, {
+								id: "cmd-cap-open",
+								label: "Open the Android project directly in Android Studio",
+								code: `npx cap open android`,
+								copiedId,
+								onCopy: handleCopy
+							})]
+						}),
+						activeStep.id === "kotlin" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "space-y-4",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", {
+									className: "text-sm font-semibold text-slate-900 dark:text-white",
+									children: ["Native Kotlin HID Files Included in ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+										className: "font-mono",
+										children: "android/"
+									})]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", {
+									className: "space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono text-blue-600 dark:text-cyan-400",
+												children: "HidReportDescriptor.kt"
+											}),
+											" ",
+											"— Composite HID SDP descriptor defining Report ID ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "1"
+											}),
+											" ",
+											"(3-button mouse, X, Y, vertical wheel, horizontal AC pan) and Report ID",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "2"
+											}),
+											" (6-key rollover US keyboard + modifiers)."
+										] }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono text-blue-600 dark:text-cyan-400",
+												children: "BluetoothHidManager.kt"
+											}),
+											" ",
+											"— Obtains ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "BluetoothProfile.HID_DEVICE"
+											}),
+											" proxy, calls ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "registerApp()"
+											}),
+											",",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "connect()"
+											}),
+											",",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "sendReport()"
+											}),
+											",",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "disconnect()"
+											}),
+											", and",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "unregisterApp()"
+											}),
+											", and listens to",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "BluetoothHidDevice.Callback"
+											}),
+											"."
+										] }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono text-blue-600 dark:text-cyan-400",
+												children: "BluetoothHIDPlugin.kt"
+											}),
+											" ",
+											"— Capacitor plugin (",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "@CapacitorPlugin(name = \"BluetoothHID\")"
+											}),
+											") handling Android 12+ (",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "BLUETOOTH_CONNECT"
+											}),
+											",",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "BLUETOOTH_SCAN"
+											}),
+											",",
+											" ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "BLUETOOTH_ADVERTISE"
+											}),
+											") and legacy runtime permissions plus pause/resume key release."
+										] }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono text-blue-600 dark:text-cyan-400",
+												children: "MainActivity.kt"
+											}),
+											" ",
+											"— Registers ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "BluetoothHIDPlugin::class.java"
+											}),
+											" ",
+											"before ",
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+												className: "font-mono",
+												children: "super.onCreate(savedInstanceState)"
+											}),
+											"."
+										] })
+									]
+								})]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyCodeBlock, {
+								id: "kotlin-mainactivity",
+								label: "MainActivity.kt plugin registration",
+								code: `package com.bluemouse.app\n\nimport android.os.Bundle\nimport com.getcapacitor.BridgeActivity\n\nclass MainActivity : BridgeActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        registerPlugin(BluetoothHIDPlugin::class.java)\n        super.onCreate(savedInstanceState)\n    }\n}`,
+								copiedId,
+								onCopy: handleCopy
+							})]
+						}),
+						activeStep.id === "apk" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "space-y-4",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", {
+										className: "text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Smartphone, { className: "h-4 w-4 text-blue-600 dark:text-cyan-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Generate & Install APK" })]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ol", {
+										className: "space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Android Studio UI" }),
+												": Click",
+												" ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("em", { children: "Build → Build App(s) / APK(s) → Build APK(s)" }),
+												" for a debug build, or",
+												" ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("em", { children: "Build → Generate Signed App Bundle / APK" }),
+												" for a signed release APK."
+											] }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Gradle CLI" }),
+												": Run the commands below inside the",
+												" ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+													className: "font-mono",
+													children: "android/"
+												}),
+												" directory (make sure Gradle wrapper is initialized via Android Studio first if ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+													className: "font-mono",
+													children: "gradlew"
+												}),
+												" ",
+												"is not yet generated)."
+											] }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [
+												"Install onto your connected Android 9+ phone via",
+												" ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+													className: "font-mono",
+													children: "adb install"
+												}),
+												", grant Bluetooth permissions, register the HID profile, and pair with your Windows PC!"
+											] })
+										]
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyCodeBlock, {
+									id: "cmd-apk-build",
+									label: "Build debug APK & install via ADB",
+									code: `cd android\n./gradlew assembleDebug\n\n# Install APK onto connected Android 9+ device:\nadb install -r app/build/outputs/apk/debug/app-debug.apk`,
+									copiedId,
+									onCopy: handleCopy
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 flex flex-wrap items-center justify-between gap-3",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										className: "text-xs sm:text-sm text-blue-900 dark:text-cyan-100",
+										children: "Ready to verify on your smartphone? Open the 12-item Physical Device Testing Checklist in Settings."
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+										type: "button",
+										onClick: () => {
+											onClose();
+											onOpenChecklist();
+										},
+										className: "min-h-[40px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold whitespace-nowrap",
+										children: "Open Testing Checklist"
+									})]
+								})
+							]
+						})
+					]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "flex items-center justify-between gap-3 px-5 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#081020] shrink-0",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+						className: "text-xs text-slate-500 dark:text-slate-400 tabular-nums",
+						children: [
+							"Step ",
+							activeStepIndex + 1,
+							" of ",
+							GUIDE_STEPS.length
+						]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex items-center gap-2",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+							type: "button",
+							disabled: activeStepIndex === 0,
+							onClick: () => setActiveStepIndex((i) => Math.max(0, i - 1)),
+							className: "min-h-[40px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] disabled:opacity-40 text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronLeft, { className: "h-4 w-4" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Previous" })]
+						}), activeStepIndex < GUIDE_STEPS.length - 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+							type: "button",
+							onClick: () => setActiveStepIndex((i) => Math.min(GUIDE_STEPS.length - 1, i + 1)),
+							className: "min-h-[40px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Next Step" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "h-4 w-4" })]
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+							type: "button",
+							onClick: onClose,
+							className: "min-h-[40px] px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold",
+							children: "Done"
+						})]
+					})]
+				})
+			]
+		})
 	});
 }
 // src/components/AppShell.tsx
@@ -12696,6 +13428,38 @@ function ConfirmDisconnectModal({ open, device, onConfirm, onCancel }) {
 					})]
 				})
 			]
+		})
+	});
+}
+// src/components/FeedbackToast.tsx
+function FeedbackToast({ notice, onDismiss }) {
+	if (!notice) return null;
+	const toneClasses = notice.tone === "error" ? "border-rose-500/40 bg-rose-950/90 text-rose-100" : notice.tone === "success" ? "border-emerald-500/40 bg-emerald-950/90 text-emerald-100" : notice.tone === "loading" ? "border-cyan-500/40 bg-[#0B1221]/95 text-cyan-100" : "border-blue-500/40 bg-[#0B1221]/95 text-slate-100";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto md:max-w-md z-50 pointer-events-auto",
+		role: "status",
+		"aria-live": "polite",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: `rounded-2xl border backdrop-blur-md shadow-xl px-4 py-3 flex items-center justify-between gap-3 ${toneClasses}`,
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "flex items-center gap-2.5 min-w-0",
+				children: [
+					notice.tone === "loading" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, { className: "h-4 w-4 text-cyan-400 animate-spin shrink-0" }),
+					notice.tone === "success" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-4 w-4 text-emerald-400 shrink-0" }),
+					notice.tone === "error" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, { className: "h-4 w-4 text-rose-400 shrink-0" }),
+					notice.tone === "info" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-4 w-4 text-blue-400 shrink-0" }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						className: "text-xs sm:text-sm font-medium leading-snug",
+						children: notice.message
+					})
+				]
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				onClick: onDismiss,
+				className: "min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 shrink-0",
+				"aria-label": "Dismiss notification",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: "h-4 w-4" })
+			})]
 		})
 	});
 }
@@ -13446,7 +14210,7 @@ var __vitePreload = function preload(baseModule, deps, importerUrl) {
 	});
 };
 // node_modules/@capacitor/app/dist/esm/index.js
-var App$1 = registerPlugin("App", { web: () => __vitePreload(() => import("./web-Vdq0lBCc.js").then((m) => new m.AppWeb()), []) });
+var App$1 = registerPlugin("App", { web: () => __vitePreload(() => import("./web-CkEytMzW.js").then((m) => new m.AppWeb()), []) });
 // src/bridge/bluetoothHidBridge.ts
 var NativeBluetoothHID = registerPlugin("BluetoothHID");
 function isNativeAndroidRuntime() {
@@ -13554,7 +14318,9 @@ var bluetoothHidBridge = {
 		return Promise.all([
 			NativeBluetoothHID.addListener("bluetoothStateChanged", (d) => handlers.onBluetoothStateChanged(d.state)),
 			NativeBluetoothHID.addListener("hidRegistrationChanged", (d) => handlers.onHidRegistrationChanged(d.state, d.error)),
-			NativeBluetoothHID.addListener("connectionStateChanged", (d) => handlers.onConnectionStateChanged(d))
+			NativeBluetoothHID.addListener("connectionStateChanged", (d) => handlers.onConnectionStateChanged(d)),
+			NativeBluetoothHID.addListener("discoverabilityChanged", (d) => handlers.onDiscoverabilityChanged?.(d.isDiscoverable)),
+			NativeBluetoothHID.addListener("bondStateChanged", (d) => handlers.onBondStateChanged?.(d))
 		]);
 	}
 };
@@ -13602,7 +14368,7 @@ var NotificationType;
 	NotificationType["Error"] = "ERROR";
 })(NotificationType || (NotificationType = {}));
 // node_modules/@capacitor/haptics/dist/esm/index.js
-var Haptics = registerPlugin("Haptics", { web: () => __vitePreload(() => import("./web-BtgFseOv.js").then((m) => new m.HapticsWeb()), []) });
+var Haptics = registerPlugin("Haptics", { web: () => __vitePreload(() => import("./web-CGIMInu2.js").then((m) => new m.HapticsWeb()), []) });
 function clampInt8(value) {
 	const rounded = Math.round(value);
 	if (rounded > 127) return 127;
@@ -14678,6 +15444,20 @@ function useBluetoothHid(settings, onSaveLastDevice) {
 					status: "failed",
 					note: reason ?? "Connection attempt failed"
 				}));
+			},
+			onDiscoverabilityChanged: (isDiscoverable) => {
+				setStatus((prev) => ({
+					...prev,
+					isDiscoverable
+				}));
+			},
+			onBondStateChanged: ({ bondState, device }) => {
+				if (bondState === "bonded") refreshState();
+				else if (bondState === "cancelled") setStatus((prev) => ({
+					...prev,
+					lastError: `Bluetooth pairing with ${device?.name || "host"} was cancelled or failed.`,
+					connectionPhase: prev.isNativeAndroid ? "connection_failed" : prev.connectionPhase
+				}));
 			}
 		}).then((handles) => {
 			pluginListeners = handles;
@@ -14896,6 +15676,12 @@ function TouchpadSurface({ settings, compact = false, isConnected }) {
 			id: Date.now()
 		});
 	}, []);
+	(0, import_react.useEffect)(() => {
+		if (!isConnected) {
+			setDragLockActive(false);
+			setLongPressDragging(false);
+		}
+	}, [isConnected]);
 	(0, import_react.useEffect)(() => {
 		return () => {
 			clearLongPressTimer();
@@ -15504,7 +16290,7 @@ var NAV_KEYS = [
 		keycode: HID_KEY.PRINT_SCREEN
 	}
 ];
-function VirtualKeyboard({ hapticEnabled, compact = false }) {
+function VirtualKeyboard({ hapticEnabled, compact = false, isConnected = false }) {
 	const [layoutMode, setLayoutMode] = (0, import_react.useState)("qwerty");
 	const [showFnRow, setShowFnRow] = (0, import_react.useState)(!compact);
 	const [shiftLatched, setShiftLatched] = (0, import_react.useState)(false);
@@ -15514,14 +16300,23 @@ function VirtualKeyboard({ hapticEnabled, compact = false }) {
 	const [textInput, setTextInput] = (0, import_react.useState)("");
 	const [unicodeWarning, setUnicodeWarning] = (0, import_react.useState)(null);
 	const [sendingText, setSendingText] = (0, import_react.useState)(false);
+	const [lastActionHint, setLastActionHint] = (0, import_react.useState)(null);
 	const effectiveShift = (heldModifiers & 2) !== 0 || shiftLatched;
 	const uppercase = effectiveShift !== capsActive;
 	const releaseAllSafe = (0, import_react.useCallback)(() => {
 		setPressedKeycodes([]);
 		setHeldModifiers(0);
 		setShiftLatched(false);
+		setLastActionHint("All keys & modifiers released");
 		bluetoothService.releaseAllKeys();
 	}, []);
+	(0, import_react.useEffect)(() => {
+		if (!isConnected) {
+			setPressedKeycodes([]);
+			setHeldModifiers(0);
+			setShiftLatched(false);
+		}
+	}, [isConnected]);
 	(0, import_react.useEffect)(() => {
 		const onBlur = () => releaseAllSafe();
 		window.addEventListener("blur", onBlur);
@@ -15577,7 +16372,8 @@ function VirtualKeyboard({ hapticEnabled, compact = false }) {
 		setSendingText(true);
 		try {
 			await bluetoothService.triggerHaptic(hapticEnabled, "medium");
-			await bluetoothService.sendTextString(textInput);
+			const { sentCount } = await bluetoothService.sendTextString(textInput);
+			setLastActionHint(`Formatted ${sentCount} HID key event${sentCount === 1 ? "" : "s"}`);
 			setTextInput("");
 		} finally {
 			setSendingText(false);
@@ -15646,10 +16442,15 @@ function VirtualKeyboard({ hapticEnabled, compact = false }) {
 					onClick: async () => {
 						await bluetoothService.triggerHaptic(hapticEnabled, "medium");
 						await bluetoothService.sendShortcut(sc.modifiers, sc.keycodes);
+						setLastActionHint(`Triggered ${sc.label} (${sc.description})`);
 					},
 					className: "min-h-[38px] px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] hover:border-blue-500/50 text-xs font-mono font-medium text-slate-700 dark:text-cyan-300 shrink-0 whitespace-nowrap transition-colors active:scale-95",
 					children: sc.label
 				}, sc.id))
+			}),
+			lastActionHint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-xs font-mono text-blue-600 dark:text-cyan-400 px-1",
+				children: lastActionHint
 			}),
 			!compact && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
 				onSubmit: handleSendText,
@@ -15670,7 +16471,7 @@ function VirtualKeyboard({ hapticEnabled, compact = false }) {
 					type: "submit",
 					disabled: sendingText || !textInput.trim(),
 					className: "min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-colors",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Send, { className: "h-4 w-4" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Send" })]
+					children: [sendingText ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Send, { className: "h-4 w-4" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: sendingText ? "Sending..." : "Send" })]
 				})]
 			}),
 			unicodeWarning && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -15994,7 +16795,8 @@ function CombinedScreen({ settings, status, diagnostics }) {
 					className: "lg:col-span-7",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VirtualKeyboard, {
 						hapticEnabled: settings.hapticFeedback,
-						compact: true
+						compact: true,
+						isConnected
 					})
 				})]
 			}),
@@ -16066,7 +16868,7 @@ function getPhaseMeta(phase, status) {
 		};
 	}
 }
-function DashboardScreen({ supportInfo, status, pairedDevices, history, isBusy, onRequestPermissions, onEnableBluetooth, onRegisterHid, onUnregisterHid, onMakeDiscoverable, onOpenBtSettings, onConnectDevice, onRequestDisconnect, onRefresh, onClearHistory, onNavigate }) {
+function DashboardScreen({ supportInfo, status, pairedDevices, history, isBusy, onRequestPermissions, onEnableBluetooth, onRegisterHid, onUnregisterHid, onMakeDiscoverable, onOpenBtSettings, onConnectDevice, onRequestDisconnect, onRefresh, onClearHistory, onNavigate, onOpenApkGuide }) {
 	const phaseMeta = getPhaseMeta(status.connectionPhase, status);
 	const PhaseIcon = phaseMeta.icon;
 	const isConnected = status.connectionPhase === "connected";
@@ -16148,7 +16950,7 @@ function DashboardScreen({ supportInfo, status, pairedDevices, history, isBusy, 
 								})] }),
 								!status.isNativeAndroid && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 									type: "button",
-									onClick: () => onNavigate("settings"),
+									onClick: onOpenApkGuide,
 									className: "min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors whitespace-nowrap",
 									children: "Android Build & APK Guide"
 								}),
@@ -16163,17 +16965,51 @@ function DashboardScreen({ supportInfo, status, pairedDevices, history, isBusy, 
 							]
 						})]
 					}),
-					!status.isNativeAndroid && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-start gap-3",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldAlert, { className: "h-5 w-5 text-amber-500 shrink-0 mt-0.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "text-xs sm:text-sm text-amber-900 dark:text-amber-100 space-y-1",
+					status.isNativeAndroid && supportInfo && !supportInfo.hidProfileSupported && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "mt-5 rounded-2xl border border-rose-500/35 bg-rose-500/10 p-4 flex items-start gap-3",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, { className: "h-5 w-5 text-rose-500 shrink-0 mt-0.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "text-xs sm:text-sm text-rose-900 dark:text-rose-100",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 								className: "font-semibold",
-								children: "Native Android HID functionality requires the installed Android application"
+								children: "Bluetooth HID Device Profile Unsupported"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								className: "text-amber-800/90 dark:text-amber-200/90 leading-relaxed",
-								children: "Web browsers cannot act as Bluetooth HID mouse/keyboard peripherals. You can explore the full touchpad, keyboard, settings, and HID report formatter here, then compile the included Kotlin plugin (`BluetoothHIDPlugin.kt`) via Capacitor and Android Studio to control Windows or Android hosts over real Bluetooth."
+								className: "mt-0.5 text-rose-800/90 dark:text-rose-200/90 leading-relaxed",
+								children: supportInfo.reason || "This Android device or firmware does not expose BluetoothHidDevice (requires Android 9+ with HID Device profile enabled)."
 							})]
+						})]
+					}),
+					status.lastError && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "mt-5 rounded-2xl border border-rose-500/35 bg-rose-500/10 p-4 flex items-start gap-3",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, { className: "h-5 w-5 text-rose-500 shrink-0 mt-0.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "text-xs sm:text-sm text-rose-900 dark:text-rose-100",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								className: "font-semibold",
+								children: "Bluetooth HID Error"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								className: "mt-0.5 text-rose-800/90 dark:text-rose-200/90 leading-relaxed",
+								children: status.lastError
+							})]
+						})]
+					}),
+					!status.isNativeAndroid && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-start gap-3",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldAlert, { className: "h-5 w-5 text-amber-500 shrink-0 mt-0.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "text-xs sm:text-sm text-amber-900 dark:text-amber-100 space-y-1",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "font-semibold",
+									children: "Native Android HID functionality requires the installed Android application"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "text-amber-800/90 dark:text-amber-200/90 leading-relaxed",
+									children: "Web browsers cannot act as Bluetooth HID mouse/keyboard peripherals. Explore the touchpad, keyboard, settings, and HID report formatter here, or follow the build guide to compile the included Kotlin plugin via Capacitor and Android Studio."
+								})]
+							})]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+							type: "button",
+							onClick: onOpenApkGuide,
+							className: "min-h-[38px] px-3.5 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-100 text-xs font-semibold whitespace-nowrap shrink-0",
+							children: "Open Build Guide"
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -16289,7 +17125,7 @@ function DashboardScreen({ supportInfo, status, pairedDevices, history, isBusy, 
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 							className: "text-xs text-slate-500 dark:text-slate-400 mb-4",
-							children: "Windows 10/11 & Android HID Host pairing steps"
+							children: "Primary: Windows 10/11 PCs · Secondary: Android devices with HID Host support"
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ol", {
 							className: "space-y-3.5 text-sm",
@@ -16429,6 +17265,10 @@ function DashboardScreen({ supportInfo, status, pairedDevices, history, isBusy, 
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 								className: "flex items-start gap-2.5",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "App backgrounded?" }), " Android may pause background HID transmission. Return to BlueMouse to automatically verify and restore HID registration."] })]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "flex items-start gap-2.5",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, { className: "h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Android-to-Android pairing?" }), " Not all Android phones enable incoming Bluetooth HID Host mode. Windows 10/11 laptops and desktops support composite Bluetooth HID mouse & keyboard out of the box."] })]
 							})
 						]
 					})]
@@ -16453,7 +17293,10 @@ function KeyboardScreen({ settings, status, diagnostics }) {
 					children: isConnected && status.connectedDevice ? `Sending US QWERTY HID keyboard reports to ${status.connectedDevice.name}` : "US QWERTY 6-key rollover HID keyboard · Report ID 0x02"
 				})] })
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(VirtualKeyboard, { hapticEnabled: settings.hapticFeedback }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(VirtualKeyboard, {
+				hapticEnabled: settings.hapticFeedback,
+				isConnected
+			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-4 flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Info, { className: "h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -16610,8 +17453,9 @@ function MouseScreen({ settings, status, diagnostics, onNavigate, onUpdateSettin
 	});
 }
 // src/screens/SettingsScreen.tsx
-function SettingsScreen({ settings, onUpdateSettings, onOpenOnboarding }) {
+function SettingsScreen({ settings, onUpdateSettings, onOpenOnboarding, onOpenApkGuide, onNotify }) {
 	const [checklist, setChecklist] = (0, import_react.useState)(() => loadTestingChecklist());
+	const [copiedCmds, setCopiedCmds] = (0, import_react.useState)(false);
 	const toggleChecklistItem = (id) => {
 		setChecklist((prev) => {
 			const next = prev.map((item) => item.id === id ? {
@@ -16625,6 +17469,7 @@ function SettingsScreen({ settings, onUpdateSettings, onOpenOnboarding }) {
 	const resetChecklist = () => {
 		setChecklist(DEFAULT_TESTING_CHECKLIST);
 		saveTestingChecklist(DEFAULT_TESTING_CHECKLIST);
+		onNotify("success", "Testing checklist reset.");
 	};
 	const completedCount = checklist.filter((c) => c.completed).length;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -16845,6 +17690,7 @@ function SettingsScreen({ settings, onUpdateSettings, onOpenOnboarding }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+				id: "testing-checklist-section",
 				className: "rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "flex flex-wrap items-center justify-between gap-3 mb-4",
@@ -16899,10 +17745,18 @@ function SettingsScreen({ settings, onUpdateSettings, onOpenOnboarding }) {
 				className: "rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6 space-y-4",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "flex items-center gap-2.5",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Terminal, { className: "h-5 w-5 text-blue-600 dark:text-cyan-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-							className: "text-lg font-semibold text-slate-900 dark:text-white",
-							children: "Android Setup, Build & APK Generation"
+						className: "flex flex-wrap items-center justify-between gap-3",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center gap-2.5",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Terminal, { className: "h-5 w-5 text-blue-600 dark:text-cyan-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+								className: "text-lg font-semibold text-slate-900 dark:text-white",
+								children: "Android Setup, Build & APK Generation"
+							})]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+							type: "button",
+							onClick: onOpenApkGuide,
+							className: "min-h-[40px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold whitespace-nowrap transition-colors",
+							children: "Open Interactive APK Build Guide"
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
@@ -16946,8 +17800,27 @@ function SettingsScreen({ settings, onUpdateSettings, onOpenOnboarding }) {
 						]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "rounded-2xl bg-slate-950 text-slate-100 p-4 font-mono text-xs overflow-x-auto space-y-1.5",
+						className: "rounded-2xl bg-slate-950 text-slate-100 p-4 font-mono text-xs overflow-x-auto space-y-1.5 relative",
 						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+								type: "button",
+								onClick: async () => {
+									const snippet = "npm install && npm run build\nnpx cap sync android\nnpx cap open android\ncd android && ./gradlew assembleDebug";
+									try {
+										await navigator.clipboard.writeText(snippet);
+										setCopiedCmds(true);
+										onNotify("success", "Build commands copied to clipboard.");
+										window.setTimeout(() => setCopiedCmds(false), 2e3);
+									} catch {
+										onNotify("error", "Clipboard access blocked. Copy commands manually.");
+									}
+								},
+								className: "absolute top-3 right-3 min-h-[30px] px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-sans text-xs font-medium flex items-center gap-1.5",
+								children: copiedCmds ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { className: "h-3.5 w-3.5 text-emerald-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "text-emerald-400",
+									children: "Copied"
+								})] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, { className: "h-3.5 w-3.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Copy" })] })
+							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 								className: "text-cyan-400",
 								children: "# 1. Install dependencies and build production web bundle"
@@ -16996,28 +17869,124 @@ function App() {
 	const [activeScreen, setActiveScreen] = (0, import_react.useState)("dashboard");
 	const [showOnboarding, setShowOnboarding] = (0, import_react.useState)(() => !isOnboardingCompleted());
 	const [showDisconnectConfirm, setShowDisconnectConfirm] = (0, import_react.useState)(false);
+	const [showApkGuide, setShowApkGuide] = (0, import_react.useState)(false);
+	const [toast, setToast] = (0, import_react.useState)(null);
+	const toastTimerRef = (0, import_react.useRef)(null);
 	const { settings, updateSettings } = useSettings();
+	const showToast = (0, import_react.useCallback)((tone, message) => {
+		if (toastTimerRef.current !== null) {
+			window.clearTimeout(toastTimerRef.current);
+			toastTimerRef.current = null;
+		}
+		const id = Date.now();
+		setToast({
+			id,
+			tone,
+			message
+		});
+		if (tone !== "loading") toastTimerRef.current = window.setTimeout(() => {
+			setToast((curr) => curr?.id === id ? null : curr);
+		}, 3600);
+	}, []);
 	const bt = useBluetoothHid(settings, (0, import_react.useCallback)((address) => {
 		updateSettings({ lastDeviceAddress: address });
 	}, [updateSettings]));
-	const handlePrimaryHeaderAction = () => {
+	const handlePrimaryHeaderAction = async () => {
 		if (bt.status.connectionPhase === "connected") {
 			setShowDisconnectConfirm(true);
 			return;
 		}
 		if (!bt.status.isNativeAndroid) {
-			setActiveScreen("settings");
+			setShowApkGuide(true);
 			return;
 		}
-		if (bt.status.hidState === "registered") bt.makeDiscoverable(120);
-		else bt.registerHidProfile();
+		if (bt.status.hidState === "registered") {
+			showToast("loading", "Requesting Bluetooth discoverability...");
+			await bt.makeDiscoverable(120);
+			showToast("info", "Device discoverable for system pairing.");
+		} else {
+			showToast("loading", "Registering Bluetooth HID peripheral...");
+			await bt.registerHidProfile();
+		}
+	};
+	const handleRefresh = async () => {
+		showToast("loading", "Checking Bluetooth HID hardware status...");
+		try {
+			await bt.refreshState();
+			if (bt.status.isNativeAndroid) showToast("success", "Bluetooth HID status refreshed.");
+			else showToast("info", "Browser runtime detected — install the Android APK for live Bluetooth HID.");
+		} catch {
+			showToast("error", "Failed to refresh Bluetooth status.");
+		}
+	};
+	const handleRequestPermissions = async () => {
+		showToast("loading", "Requesting Android Bluetooth permissions...");
+		try {
+			await bt.requestPermissions();
+			showToast("success", "Bluetooth permission status updated.");
+		} catch {
+			showToast("error", "Bluetooth permission request failed.");
+		}
+	};
+	const handleEnableBluetooth = async () => {
+		showToast("loading", "Opening Android Bluetooth enable dialog...");
+		try {
+			await bt.enableBluetooth();
+			showToast("success", "Bluetooth status updated.");
+		} catch {
+			showToast("error", "Could not enable Bluetooth.");
+		}
+	};
+	const handleRegisterHid = async () => {
+		showToast("loading", "Registering Mouse & Keyboard HID profile...");
+		try {
+			await bt.registerHidProfile();
+			showToast("info", "HID registration request sent to Android.");
+		} catch {
+			showToast("error", "Failed to register HID peripheral.");
+		}
+	};
+	const handleUnregisterHid = async () => {
+		showToast("loading", "Unregistering HID peripheral...");
+		try {
+			await bt.unregisterHidProfile();
+			showToast("success", "HID peripheral unregistered.");
+		} catch {
+			showToast("error", "Failed to unregister HID peripheral.");
+		}
+	};
+	const handleMakeDiscoverable = async () => {
+		showToast("loading", "Making smartphone discoverable for 120 seconds...");
+		try {
+			await bt.makeDiscoverable(120);
+			showToast("info", "Bluetooth discoverability requested.");
+		} catch {
+			showToast("error", "Could not start Bluetooth discoverability.");
+		}
+	};
+	const handleConnectDevice = async (device) => {
+		showToast("loading", `Connecting to ${device.name || device.address}...`);
+		try {
+			await bt.connectToDevice(device);
+		} catch {
+			showToast("error", `Failed to connect to ${device.name || device.address}.`);
+		}
+	};
+	const handleOpenChecklist = () => {
+		setActiveScreen("settings");
+		window.setTimeout(() => {
+			document.getElementById("testing-checklist-section")?.scrollIntoView({
+				behavior: "smooth",
+				block: "start"
+			});
+		}, 80);
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AppShell, {
 			activeScreen,
 			onSelectScreen: setActiveScreen,
 			status: bt.status,
-			onPrimaryAction: handlePrimaryHeaderAction,
+			onPrimaryAction: () => void handlePrimaryHeaderAction(),
 			children: [
 				activeScreen === "dashboard" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DashboardScreen, {
 					supportInfo: bt.supportInfo,
@@ -17025,24 +17994,31 @@ function App() {
 					pairedDevices: bt.pairedDevices,
 					history: bt.history,
 					isBusy: bt.isBusy,
-					onRequestPermissions: bt.requestPermissions,
-					onEnableBluetooth: bt.enableBluetooth,
-					onRegisterHid: bt.registerHidProfile,
-					onUnregisterHid: bt.unregisterHidProfile,
-					onMakeDiscoverable: () => bt.makeDiscoverable(120),
-					onOpenBtSettings: bt.openSystemBluetoothSettings,
-					onConnectDevice: bt.connectToDevice,
+					onRequestPermissions: () => void handleRequestPermissions(),
+					onEnableBluetooth: () => void handleEnableBluetooth(),
+					onRegisterHid: () => void handleRegisterHid(),
+					onUnregisterHid: () => void handleUnregisterHid(),
+					onMakeDiscoverable: () => void handleMakeDiscoverable(),
+					onOpenBtSettings: () => void bt.openSystemBluetoothSettings(),
+					onConnectDevice: (device) => void handleConnectDevice(device),
 					onRequestDisconnect: () => setShowDisconnectConfirm(true),
-					onRefresh: bt.refreshState,
-					onClearHistory: bt.clearHistory,
-					onNavigate: setActiveScreen
+					onRefresh: () => void handleRefresh(),
+					onClearHistory: () => {
+						bt.clearHistory();
+						showToast("success", "Connection history cleared.");
+					},
+					onNavigate: setActiveScreen,
+					onOpenApkGuide: () => setShowApkGuide(true)
 				}),
 				activeScreen === "mouse" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MouseScreen, {
 					settings,
 					status: bt.status,
 					diagnostics: bt.diagnostics,
 					onNavigate: setActiveScreen,
-					onUpdateSettings: updateSettings
+					onUpdateSettings: (patch) => {
+						updateSettings(patch);
+						if (patch.handedness) showToast("success", `Mouse buttons switched to ${patch.handedness}-handed mode.`);
+					}
 				}),
 				activeScreen === "keyboard" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KeyboardScreen, {
 					settings,
@@ -17057,7 +18033,9 @@ function App() {
 				activeScreen === "settings" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsScreen, {
 					settings,
 					onUpdateSettings: updateSettings,
-					onOpenOnboarding: () => setShowOnboarding(true)
+					onOpenOnboarding: () => setShowOnboarding(true),
+					onOpenApkGuide: () => setShowApkGuide(true),
+					onNotify: (tone, message) => showToast(tone, message)
 				})
 			]
 		}),
@@ -17068,14 +18046,26 @@ function App() {
 				setShowOnboarding(false);
 			}
 		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ApkBuildGuideModal, {
+			open: showApkGuide,
+			onClose: () => setShowApkGuide(false),
+			onOpenChecklist: handleOpenChecklist
+		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConfirmDisconnectModal, {
 			open: showDisconnectConfirm,
 			device: bt.status.connectedDevice,
 			onCancel: () => setShowDisconnectConfirm(false),
 			onConfirm: () => {
 				setShowDisconnectConfirm(false);
-				bt.disconnectCurrentDevice();
+				showToast("loading", "Disconnecting Bluetooth host...");
+				bt.disconnectCurrentDevice().then(() => {
+					showToast("success", "Disconnected safely.");
+				});
 			}
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FeedbackToast, {
+			notice: toast,
+			onDismiss: () => setToast(null)
 		})
 	] });
 }

@@ -48,6 +48,17 @@ export interface BluetoothHIDPluginInterface {
       reason?: string;
     }) => void
   ): Promise<PluginListenerHandle>;
+  addListener(
+    eventName: 'discoverabilityChanged',
+    listenerFunc: (data: { isDiscoverable: boolean }) => void
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    eventName: 'bondStateChanged',
+    listenerFunc: (data: {
+      bondState: 'bonded' | 'bonding' | 'cancelled' | 'none';
+      device?: PairedBluetoothDevice;
+    }) => void
+  ): Promise<PluginListenerHandle>;
 }
 
 const NativeBluetoothHID = registerPlugin<BluetoothHIDPluginInterface>('BluetoothHID');
@@ -196,6 +207,11 @@ export const bluetoothHidBridge = {
       device?: PairedBluetoothDevice | null;
       reason?: string;
     }) => void;
+    onDiscoverabilityChanged?: (isDiscoverable: boolean) => void;
+    onBondStateChanged?: (payload: {
+      bondState: 'bonded' | 'bonding' | 'cancelled' | 'none';
+      device?: PairedBluetoothDevice;
+    }) => void;
   }): Promise<PluginListenerHandle[]> {
     if (!isNativeAndroidRuntime()) {
       return Promise.resolve([]);
@@ -209,6 +225,12 @@ export const bluetoothHidBridge = {
       ),
       NativeBluetoothHID.addListener('connectionStateChanged', (d) =>
         handlers.onConnectionStateChanged(d)
+      ),
+      NativeBluetoothHID.addListener('discoverabilityChanged', (d) =>
+        handlers.onDiscoverabilityChanged?.(d.isDiscoverable)
+      ),
+      NativeBluetoothHID.addListener('bondStateChanged', (d) =>
+        handlers.onBondStateChanged?.(d)
       ),
     ]);
   },

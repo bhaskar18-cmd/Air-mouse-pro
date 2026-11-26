@@ -31,7 +31,7 @@ export function KeyboardScreen({ settings, status, diagnostics }: KeyboardScreen
         </div>
       </div>
 
-      <VirtualKeyboard hapticEnabled={settings.hapticFeedback} />
+      <VirtualKeyboard hapticEnabled={settings.hapticFeedback} isConnected={isConnected} />
 
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-4 flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400">
         <Info className="h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" />

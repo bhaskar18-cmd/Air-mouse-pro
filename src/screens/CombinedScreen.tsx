@@ -34,7 +34,11 @@ export function CombinedScreen({ settings, status, diagnostics }: CombinedScreen
           <TouchpadSurface settings={settings} compact isConnected={isConnected} />
         </div>
         <div className="lg:col-span-7">
-          <VirtualKeyboard hapticEnabled={settings.hapticFeedback} compact />
+          <VirtualKeyboard
+            hapticEnabled={settings.hapticFeedback}
+            compact
+            isConnected={isConnected}
+          />
         </div>
       </div>
 

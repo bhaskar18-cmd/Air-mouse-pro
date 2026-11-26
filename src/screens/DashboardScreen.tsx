@@ -41,6 +41,7 @@ interface DashboardScreenProps {
   onRefresh: () => void;
   onClearHistory: () => void;
   onNavigate: (screen: AppScreen) => void;
+  onOpenApkGuide: () => void;
 }
 
 interface PhaseMeta {
@@ -146,6 +147,7 @@ export function DashboardScreen({
   onRefresh,
   onClearHistory,
   onNavigate,
+  onOpenApkGuide,
 }: DashboardScreenProps) {
   const phaseMeta = getPhaseMeta(status.connectionPhase, status);
   const PhaseIcon = phaseMeta.icon;
@@ -261,7 +263,7 @@ export function DashboardScreen({
             {!status.isNativeAndroid && (
               <button
                 type="button"
-                onClick={() => onNavigate('settings')}
+                onClick={onOpenApkGuide}
                 className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
               >
                 Android Build &amp; APK Guide
@@ -280,21 +282,56 @@ export function DashboardScreen({
           </div>
         </div>
 
-        {/* Browser Environment Notice (Strict Honesty Rule) */}
-        {!status.isNativeAndroid && (
-          <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-start gap-3">
-            <ShieldAlert className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-            <div className="text-xs sm:text-sm text-amber-900 dark:text-amber-100 space-y-1">
-              <p className="font-semibold">
-                Native Android HID functionality requires the installed Android application
-              </p>
-              <p className="text-amber-800/90 dark:text-amber-200/90 leading-relaxed">
-                Web browsers cannot act as Bluetooth HID mouse/keyboard peripherals. You can
-                explore the full touchpad, keyboard, settings, and HID report formatter here, then
-                compile the included Kotlin plugin (`BluetoothHIDPlugin.kt`) via Capacitor and
-                Android Studio to control Windows or Android hosts over real Bluetooth.
+        {/* Unsupported Android Hardware Warning */}
+        {status.isNativeAndroid && supportInfo && !supportInfo.hidProfileSupported && (
+          <div className="mt-5 rounded-2xl border border-rose-500/35 bg-rose-500/10 p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
+            <div className="text-xs sm:text-sm text-rose-900 dark:text-rose-100">
+              <p className="font-semibold">Bluetooth HID Device Profile Unsupported</p>
+              <p className="mt-0.5 text-rose-800/90 dark:text-rose-200/90 leading-relaxed">
+                {supportInfo.reason ||
+                  'This Android device or firmware does not expose BluetoothHidDevice (requires Android 9+ with HID Device profile enabled).'}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Explicit Error State Banner */}
+        {status.lastError && (
+          <div className="mt-5 rounded-2xl border border-rose-500/35 bg-rose-500/10 p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
+            <div className="text-xs sm:text-sm text-rose-900 dark:text-rose-100">
+              <p className="font-semibold">Bluetooth HID Error</p>
+              <p className="mt-0.5 text-rose-800/90 dark:text-rose-200/90 leading-relaxed">
+                {status.lastError}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Browser Environment Notice (Strict Honesty Rule) */}
+        {!status.isNativeAndroid && (
+          <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="text-xs sm:text-sm text-amber-900 dark:text-amber-100 space-y-1">
+                <p className="font-semibold">
+                  Native Android HID functionality requires the installed Android application
+                </p>
+                <p className="text-amber-800/90 dark:text-amber-200/90 leading-relaxed">
+                  Web browsers cannot act as Bluetooth HID mouse/keyboard peripherals. Explore the
+                  touchpad, keyboard, settings, and HID report formatter here, or follow the build
+                  guide to compile the included Kotlin plugin via Capacitor and Android Studio.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenApkGuide}
+              className="min-h-[38px] px-3.5 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-100 text-xs font-semibold whitespace-nowrap shrink-0"
+            >
+              Open Build Guide
+            </button>
           </div>
         )}
 
@@ -418,7 +455,7 @@ export function DashboardScreen({
             Bluetooth Pairing Guide
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-            Windows 10/11 &amp; Android HID Host pairing steps
+            Primary: Windows 10/11 PCs · Secondary: Android devices with HID Host support
           </p>
 
           <ol className="space-y-3.5 text-sm">
@@ -563,6 +600,14 @@ export function DashboardScreen({
               <p>
                 <strong>App backgrounded?</strong> Android may pause background HID transmission.
                 Return to BlueMouse to automatically verify and restore HID registration.
+              </p>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+              <p>
+                <strong>Android-to-Android pairing?</strong> Not all Android phones enable
+                incoming Bluetooth HID Host mode. Windows 10/11 laptops and desktops support
+                composite Bluetooth HID mouse &amp; keyboard out of the box.
               </p>
             </div>
           </div>

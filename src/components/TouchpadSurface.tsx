@@ -71,6 +71,13 @@ export function TouchpadSurface({
   }, []);
 
   useEffect(() => {
+    if (!isConnected) {
+      setDragLockActive(false);
+      setLongPressDragging(false);
+    }
+  }, [isConnected]);
+
+  useEffect(() => {
     return () => {
       clearLongPressTimer();
       void bluetoothService.releaseAllMouseButtons(settings.handedness);

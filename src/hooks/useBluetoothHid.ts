@@ -176,6 +176,23 @@ export function useBluetoothHid(
             );
           }
         },
+        onDiscoverabilityChanged: (isDiscoverable) => {
+          setStatus((prev) => ({
+            ...prev,
+            isDiscoverable,
+          }));
+        },
+        onBondStateChanged: ({ bondState, device }) => {
+          if (bondState === 'bonded') {
+            void refreshState();
+          } else if (bondState === 'cancelled') {
+            setStatus((prev) => ({
+              ...prev,
+              lastError: `Bluetooth pairing with ${device?.name || 'host'} was cancelled or failed.`,
+              connectionPhase: prev.isNativeAndroid ? 'connection_failed' : prev.connectionPhase,
+            }));
+          }
+        },
       })
       .then((handles) => {
         pluginListeners = handles;
