@@ -231,7 +231,7 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
     }
 
     @PluginMethod
-    fun requestPermissions(call: PluginCall) {
+    override fun requestPermissions(call: PluginCall) {
         val alias = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) "bluetooth_s" else "bluetooth_legacy"
         if (getPermissionState(alias) == PermissionState.GRANTED && hidManager.hasRequiredPermissions()) {
             call.resolve(JSObject().apply {
