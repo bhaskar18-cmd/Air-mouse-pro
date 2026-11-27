@@ -1,458 +1,338 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { GripHorizontal, Hand, Lock, MousePointerClick } from 'lucide-react';
-import { MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_RIGHT } from '../hid/hidReports';
+import { Hand, MousePointer2 } from 'lucide-react';
+import { MOUSE_BUTTON_LEFT } from '../hid/hidReports';
 import { bluetoothService } from '../services/bluetoothService';
-import type { BlueMouseSettings } from '../types/bluetooth';
+import type { BlueMouseSettings, DeviceProfile } from '../types/bluetooth';
+import { MouseButtonsBar } from './MouseButtonsBar';
 
 interface TouchpadSurfaceProps {
   settings: BlueMouseSettings;
   compact?: boolean;
+  expanded?: boolean;
   isConnected: boolean;
+  activeProfile?: DeviceProfile | null;
 }
 
 interface TouchPoint {
   x: number;
   y: number;
+  t: number;
 }
 
-function applySpeedCurve(
-  delta: number,
+/**
+ * Computes 2D radial speed-curve scaling so diagonal cursor movement stays straight
+ * and frame-rate variations (60Hz/90Hz/120Hz) do not introduce velocity jumps.
+ * Raw position deltas are never lagged/smoothed; only the scalar gain tracks finger speed.
+ */
+function computeRadialCursorDelta(
+  rawDx: number,
+  rawDy: number,
+  dtMs: number,
   sensitivity: number,
-  curve: BlueMouseSettings['pointerSpeed']
-): number {
-  const abs = Math.abs(delta);
-  let multiplier = sensitivity;
-  if (curve === 'adaptive') {
-    const accel = 0.72 + Math.min(abs / 14, 1.55);
-    multiplier = sensitivity * accel;
-  } else if (curve === 'precision') {
-    const damp = abs < 4 ? 0.55 : 0.9 + Math.min(abs / 28, 0.7);
-    multiplier = sensitivity * damp;
+  curve: BlueMouseSettings['pointerSpeed'],
+  speedEmaRef: { current: number }
+): { dx: number; dy: number } {
+  if (curve === 'linear') {
+    speedEmaRef.current = 0;
+    return {
+      dx: rawDx * sensitivity,
+      dy: rawDy * sensitivity,
+    };
   }
-  return delta * multiplier;
+
+  const dist = Math.hypot(rawDx, rawDy);
+  const clampedDt = Math.max(4, Math.min(40, dtMs));
+  const instSpeed = dist / clampedDt; // CSS px per ms
+  const smoothedSpeed = speedEmaRef.current === 0 ? instSpeed : speedEmaRef.current * 0.55 + instSpeed * 0.45;
+  speedEmaRef.current = smoothedSpeed;
+
+  let curveGain = 1;
+  if (curve === 'adaptive') {
+    curveGain = 0.85 + Math.min(smoothedSpeed * 0.65, 1.35);
+  } else if (curve === 'precision') {
+    curveGain = smoothedSpeed < 0.25 ? 0.65 : 0.85 + Math.min(smoothedSpeed * 0.45, 0.75);
+  }
+
+  const totalScale = sensitivity * curveGain;
+  return {
+    dx: rawDx * totalScale,
+    dy: rawDy * totalScale,
+  };
 }
 
 export function TouchpadSurface({
   settings,
   compact = false,
+  expanded = false,
   isConnected,
+  activeProfile = null,
 }: TouchpadSurfaceProps) {
   const surfaceRef = useRef<HTMLDivElement | null>(null);
-  const [dragLockActive, setDragLockActive] = useState(false);
-  const [longPressDragging, setLongPressDragging] = useState(false);
-  const [activeRipple, setActiveRipple] = useState<{ x: number; y: number; id: number } | null>(null);
-  const [gestureHint, setGestureHint] = useState<string>('Ready');
+  const gestureHintSpanRef = useRef<HTMLSpanElement | null>(null);
+  const gestureHintValueRef = useRef<string>('Ready');
 
-  // Active touch tracking
+  const [dragLockActive, setDragLockActive] = useState(false);
+
+  // Latest props in refs so native passive:false touch listeners never rebind mid-gesture
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const dragLockRef = useRef(dragLockActive);
+  dragLockRef.current = dragLockActive;
+
+  // Active touch tracking (strictly cursor movement & two-finger scroll; never tap-to-click)
   const touchMapRef = useRef<Map<number, TouchPoint>>(new Map());
-  const gestureStartTimeRef = useRef(0);
-  const totalMovedRef = useRef(0);
-  const maxFingersRef = useRef(0);
-  const lastTapTimeRef = useRef(0);
-  const longPressTimerRef = useRef<number | null>(null);
+  const isScrollingGestureRef = useRef(false);
+  const speedEmaRef = useRef(0);
   const pointerDownMouseRef = useRef(false);
   const lastMousePosRef = useRef<TouchPoint | null>(null);
 
-  const clearLongPressTimer = useCallback(() => {
-    if (longPressTimerRef.current !== null) {
-      window.clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
+  const setGestureHint = useCallback((hint: string) => {
+    if (gestureHintValueRef.current === hint) return;
+    gestureHintValueRef.current = hint;
+    if (gestureHintSpanRef.current) {
+      gestureHintSpanRef.current.textContent = hint;
     }
   }, []);
-
-  const showRippleAt = useCallback((clientX: number, clientY: number) => {
-    const rect = surfaceRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setActiveRipple({
-      x: clientX - rect.left,
-      y: clientY - rect.top,
-      id: Date.now(),
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!isConnected) {
-      setDragLockActive(false);
-      setLongPressDragging(false);
-    }
-  }, [isConnected]);
-
-  useEffect(() => {
-    return () => {
-      clearLongPressTimer();
-      void bluetoothService.releaseAllMouseButtons(settings.handedness);
-    };
-  }, [clearLongPressTimer, settings.handedness]);
 
   const toggleDragLock = useCallback(async () => {
-    const next = !dragLockActive;
+    const next = !dragLockRef.current;
     setDragLockActive(next);
     setGestureHint(next ? 'Drag lock active' : 'Drag lock released');
-    await bluetoothService.triggerHaptic(settings.hapticFeedback, 'medium');
-    await bluetoothService.setMouseButtonState(MOUSE_BUTTON_LEFT, next, settings.handedness);
-  }, [dragLockActive, settings.handedness, settings.hapticFeedback]);
+    await bluetoothService.triggerHaptic(settingsRef.current.hapticFeedback, next ? 'medium' : 'light');
+    await bluetoothService.setMouseButtonState(MOUSE_BUTTON_LEFT, next, settingsRef.current.handedness);
+  }, [setGestureHint]);
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const touches = e.touches;
-    for (let i = 0; i < touches.length; i++) {
-      const t = touches[i];
-      touchMapRef.current.set(t.identifier, { x: t.clientX, y: t.clientY });
-    }
+  // Attach native { passive: false } touch listeners directly for minimum latency & zero synthetic overhead
+  useEffect(() => {
+    const el = surfaceRef.current;
+    if (!el) return;
 
-    if (touches.length === 1 && maxFingersRef.current === 0) {
-      gestureStartTimeRef.current = performance.now();
-      totalMovedRef.current = 0;
-      maxFingersRef.current = 1;
-      setGestureHint('Tracking');
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const now = e.timeStamp || performance.now();
+      const touches = e.touches;
+      for (let i = 0; i < touches.length; i++) {
+        const t = touches[i];
+        touchMapRef.current.set(t.identifier, { x: t.clientX, y: t.clientY, t: now });
+      }
 
-      clearLongPressTimer();
-      longPressTimerRef.current = window.setTimeout(async () => {
-        if (totalMovedRef.current < 8 && touchMapRef.current.size === 1) {
-          setLongPressDragging(true);
-          setGestureHint('Drag hold');
-          await bluetoothService.triggerHaptic(settings.hapticFeedback, 'heavy');
-          await bluetoothService.setMouseButtonState(MOUSE_BUTTON_LEFT, true, settings.handedness);
+      if (touches.length >= 2) {
+        isScrollingGestureRef.current = true;
+        speedEmaRef.current = 0;
+        setGestureHint('Two-finger scroll');
+      } else if (touches.length === 1 && !isScrollingGestureRef.current) {
+        speedEmaRef.current = 0;
+        setGestureHint(dragLockRef.current ? 'Drag lock active' : 'Cursor ready');
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const now = e.timeStamp || performance.now();
+      const touches = e.touches;
+      const currSettings = settingsRef.current;
+
+      if (touches.length === 1) {
+        const t = touches[0];
+        const prev = touchMapRef.current.get(t.identifier);
+        touchMapRef.current.set(t.identifier, { x: t.clientX, y: t.clientY, t: now });
+
+        // Suppress stray 1-finger delta if user is finishing a 2-finger scroll
+        if (isScrollingGestureRef.current || !prev) {
+          return;
         }
-      }, 450);
-    } else if (touches.length >= 2) {
-      clearLongPressTimer();
-      maxFingersRef.current = Math.max(maxFingersRef.current, touches.length);
-      setGestureHint('Two-finger scroll');
-    }
-  };
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const touches = e.touches;
-
-    if (touches.length === 1 && maxFingersRef.current === 1) {
-      const t = touches[0];
-      const prev = touchMapRef.current.get(t.identifier);
-      if (prev) {
         const rawDx = t.clientX - prev.x;
         const rawDy = t.clientY - prev.y;
-        totalMovedRef.current += Math.hypot(rawDx, rawDy);
-
-        if (totalMovedRef.current > 8) {
-          clearLongPressTimer();
+        if (rawDx === 0 && rawDy === 0) {
+          return;
         }
 
-        const scaledDx = applySpeedCurve(rawDx, settings.mouseSensitivity, settings.pointerSpeed);
-        const scaledDy = applySpeedCurve(rawDy, settings.mouseSensitivity, settings.pointerSpeed);
-        bluetoothService.queueMouseDelta(scaledDx, scaledDy, 0, 0, settings);
-      }
-      touchMapRef.current.set(t.identifier, { x: t.clientX, y: t.clientY });
-    } else if (touches.length >= 2) {
-      // Average delta across first two fingers for smooth scroll
-      let sumDx = 0;
-      let sumDy = 0;
-      let count = 0;
-
-      for (let i = 0; i < Math.min(2, touches.length); i++) {
-        const t = touches[i];
-        const prev = touchMapRef.current.get(t.identifier);
-        if (prev) {
-          sumDx += t.clientX - prev.x;
-          sumDy += t.clientY - prev.y;
-          count++;
+        const dt = now - prev.t;
+        if (dt > 80) {
+          speedEmaRef.current = 0;
         }
-        touchMapRef.current.set(t.identifier, { x: t.clientX, y: t.clientY });
-      }
 
-      if (count > 0) {
-        const avgDx = sumDx / count;
-        const avgDy = sumDy / count;
-        totalMovedRef.current += Math.hypot(avgDx, avgDy);
+        const { dx, dy } = computeRadialCursorDelta(
+          rawDx,
+          rawDy,
+          dt,
+          currSettings.mouseSensitivity,
+          currSettings.pointerSpeed,
+          speedEmaRef
+        );
+        bluetoothService.queueMouseDelta(dx, dy, 0, 0, currSettings);
+        setGestureHint(dragLockRef.current ? 'Dragging (left held)' : 'Moving cursor');
+      } else if (touches.length >= 2) {
+        isScrollingGestureRef.current = true;
+        let sumDx = 0;
+        let sumDy = 0;
+        let count = 0;
 
-        const scrollDirection = settings.naturalScrolling ? 1 : -1;
-        const wheelDelta = (avgDy / 12) * settings.scrollSpeed * scrollDirection;
-        const hWheelDelta = (avgDx / 14) * settings.scrollSpeed * -scrollDirection;
-        bluetoothService.queueMouseDelta(0, 0, wheelDelta, hWheelDelta, settings);
-      }
-    }
-  };
-
-  const handleTouchEnd = async (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    clearLongPressTimer();
-
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      touchMapRef.current.delete(e.changedTouches[i].identifier);
-    }
-
-    if (e.touches.length === 0) {
-      const elapsed = performance.now() - gestureStartTimeRef.current;
-      const moved = totalMovedRef.current;
-      const fingers = maxFingersRef.current;
-      const lastTouch = e.changedTouches[0];
-
-      if (longPressDragging) {
-        setLongPressDragging(false);
-        if (!dragLockActive) {
-          await bluetoothService.setMouseButtonState(
-            MOUSE_BUTTON_LEFT,
-            false,
-            settings.handedness
-          );
-        }
-        setGestureHint('Drag released');
-      } else if (elapsed < 260 && moved < 10) {
-        if (lastTouch) showRippleAt(lastTouch.clientX, lastTouch.clientY);
-
-        if (fingers === 1) {
-          const now = performance.now();
-          if (now - lastTapTimeRef.current < 280) {
-            lastTapTimeRef.current = 0;
-            setGestureHint('Double click');
-            await bluetoothService.triggerHaptic(settings.hapticFeedback, 'medium');
-            await bluetoothService.doubleClickLeft(settings.handedness);
-          } else {
-            lastTapTimeRef.current = now;
-            setGestureHint('Left click');
-            await bluetoothService.triggerHaptic(settings.hapticFeedback, 'light');
-            await bluetoothService.clickMouseButton(MOUSE_BUTTON_LEFT, settings.handedness);
+        for (let i = 0; i < Math.min(2, touches.length); i++) {
+          const t = touches[i];
+          const prev = touchMapRef.current.get(t.identifier);
+          if (prev) {
+            sumDx += t.clientX - prev.x;
+            sumDy += t.clientY - prev.y;
+            count++;
           }
-        } else if (fingers >= 2) {
-          setGestureHint('Right click');
-          await bluetoothService.triggerHaptic(settings.hapticFeedback, 'medium');
-          await bluetoothService.clickMouseButton(MOUSE_BUTTON_RIGHT, settings.handedness);
+          touchMapRef.current.set(t.identifier, { x: t.clientX, y: t.clientY, t: now });
         }
-      } else {
-        setGestureHint('Ready');
+
+        if (count > 0) {
+          const avgDx = sumDx / count;
+          const avgDy = sumDy / count;
+          if (avgDx === 0 && avgDy === 0) {
+            return;
+          }
+
+          const scrollDirection = currSettings.naturalScrolling ? 1 : -1;
+          const wheelDelta = (avgDy / 12) * currSettings.scrollSpeed * scrollDirection;
+          const hWheelDelta = (avgDx / 14) * currSettings.scrollSpeed * -scrollDirection;
+          bluetoothService.queueMouseDelta(0, 0, wheelDelta, hWheelDelta, currSettings);
+          setGestureHint('Two-finger scroll');
+        }
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      const now = e.timeStamp || performance.now();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        touchMapRef.current.delete(e.changedTouches[i].identifier);
       }
 
-      maxFingersRef.current = 0;
-    }
-  };
+      // Re-sync remaining touch coordinates cleanly; never trigger any click on lift or tap
+      for (let i = 0; i < e.touches.length; i++) {
+        const t = e.touches[i];
+        touchMapRef.current.set(t.identifier, { x: t.clientX, y: t.clientY, t: now });
+      }
 
-  // Desktop mouse preview fallback so users inspecting in browser can also test relative movement
+      if (e.touches.length === 0) {
+        isScrollingGestureRef.current = false;
+        speedEmaRef.current = 0;
+        setGestureHint(dragLockRef.current ? 'Drag lock active' : 'Ready');
+      }
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: false });
+    el.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+      el.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [setGestureHint]);
+
+  // Desktop mouse preview fallback: dragging moves cursor only, never clicks
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if ('ontouchstart' in window && e.nativeEvent instanceof PointerEvent) return;
     pointerDownMouseRef.current = true;
-    lastMousePosRef.current = { x: e.clientX, y: e.clientY };
-    totalMovedRef.current = 0;
-    gestureStartTimeRef.current = performance.now();
+    speedEmaRef.current = 0;
+    lastMousePosRef.current = { x: e.clientX, y: e.clientY, t: e.timeStamp || performance.now() };
+    setGestureHint(dragLockActive ? 'Drag lock active' : 'Cursor ready');
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!pointerDownMouseRef.current || !lastMousePosRef.current) return;
+    const now = e.timeStamp || performance.now();
     const rawDx = e.clientX - lastMousePosRef.current.x;
     const rawDy = e.clientY - lastMousePosRef.current.y;
-    totalMovedRef.current += Math.hypot(rawDx, rawDy);
-    lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+    const dt = now - lastMousePosRef.current.t;
+    lastMousePosRef.current = { x: e.clientX, y: e.clientY, t: now };
+    if (rawDx === 0 && rawDy === 0) return;
 
-    const scaledDx = applySpeedCurve(rawDx, settings.mouseSensitivity, settings.pointerSpeed);
-    const scaledDy = applySpeedCurve(rawDy, settings.mouseSensitivity, settings.pointerSpeed);
-    bluetoothService.queueMouseDelta(scaledDx, scaledDy, 0, 0, settings);
+    const { dx, dy } = computeRadialCursorDelta(
+      rawDx,
+      rawDy,
+      dt,
+      settings.mouseSensitivity,
+      settings.pointerSpeed,
+      speedEmaRef
+    );
+    bluetoothService.queueMouseDelta(dx, dy, 0, 0, settings);
+    setGestureHint(dragLockActive ? 'Dragging (left held)' : 'Moving cursor');
   };
 
-  const handleMouseUp = async (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseUp = () => {
     if (!pointerDownMouseRef.current) return;
     pointerDownMouseRef.current = false;
     lastMousePosRef.current = null;
-    if (totalMovedRef.current < 6 && performance.now() - gestureStartTimeRef.current < 260) {
-      showRippleAt(e.clientX, e.clientY);
-      setGestureHint('Left click');
-      await bluetoothService.clickMouseButton(MOUSE_BUTTON_LEFT, settings.handedness);
-    }
+    speedEmaRef.current = 0;
+    setGestureHint(dragLockActive ? 'Drag lock active' : 'Ready');
   };
 
   const handleWheelPreview = (e: React.WheelEvent<HTMLDivElement>) => {
     const dir = settings.naturalScrolling ? -1 : 1;
     const wheelDelta = (e.deltaY > 0 ? -1 : 1) * settings.scrollSpeed * dir;
-    bluetoothService.queueMouseDelta(0, 0, wheelDelta, 0, settings);
-    setGestureHint('Scrolling');
+    const hWheelDelta = e.deltaX !== 0 ? (e.deltaX > 0 ? 1 : -1) * settings.scrollSpeed * dir : 0;
+    bluetoothService.queueMouseDelta(0, 0, wheelDelta, hWheelDelta, settings);
+    setGestureHint('Two-finger scroll');
   };
 
-  const primaryLabel = settings.handedness === 'left' ? 'Right (Primary)' : 'Left Click';
-  const secondaryLabel = settings.handedness === 'left' ? 'Left (Secondary)' : 'Right Click';
+  const heightClass = compact
+    ? 'h-52 sm:h-60'
+    : expanded
+      ? 'h-[54vh] min-h-[340px] sm:h-[58vh] lg:h-[62vh] max-h-[680px]'
+      : 'h-[46vh] min-h-[290px] max-h-[520px]';
 
   return (
-    <div className="flex flex-col gap-3 w-full">
-      {/* Main Precision Touchpad */}
+    <div className="flex flex-col gap-2.5 w-full">
+      {/* Main Precision Touchpad (Cursor movement + Two-finger scroll only) */}
       <div
         ref={surfaceRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={() => {
-          pointerDownMouseRef.current = false;
-          lastMousePosRef.current = null;
-        }}
+        onMouseLeave={handleMouseUp}
         onWheel={handleWheelPreview}
-        className={`touch-surface relative w-full ${
-          compact ? 'h-52 sm:h-60' : 'h-[46vh] min-h-[290px] max-h-[520px]'
-        } rounded-3xl border ${
-          longPressDragging || dragLockActive
-            ? 'border-cyan-400/80 ring-2 ring-cyan-500/25'
-            : 'border-slate-200 dark:border-slate-800'
-        } bg-gradient-to-br from-slate-100 via-white to-slate-100 dark:from-[#0B1426] dark:via-[#081020] dark:to-[#060B16] touchpad-grid overflow-hidden shadow-inner cursor-crosshair`}
+        onClick={(e) => e.preventDefault()}
+        onContextMenu={(e) => e.preventDefault()}
+        className={`touch-surface relative w-full ${heightClass} rounded-2xl border transition-colors duration-150 ${
+          dragLockActive
+            ? 'border-[#2563EB] dark:border-[#6B9BFF] bg-[#F5F8FF] dark:bg-[#1D222D]'
+            : 'border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24]'
+        } overflow-hidden cursor-crosshair`}
         aria-label="Bluetooth wireless touchpad area"
       >
         {/* Top subtle status row inside touchpad */}
-        <div className="pointer-events-none absolute top-3.5 left-4 right-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="pointer-events-none absolute top-3.5 left-4 right-4 flex items-center justify-between text-xs text-[#667085] dark:text-[#A0A5B1]">
           <div className="flex items-center gap-2">
-            <Hand className="h-3.5 w-3.5 text-blue-600 dark:text-cyan-400" />
-            <span>{gestureHint}</span>
+            <Hand className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#6B9BFF]" />
+            <span ref={gestureHintSpanRef}>Ready</span>
           </div>
           <span className="tabular-nums font-mono">
             {settings.mouseSensitivity.toFixed(2)}x · {settings.pointerSpeed}
           </span>
         </div>
 
-        {/* Center subtle target crosshair */}
+        {/* Center restrained guide */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-          <div className="h-12 w-12 rounded-2xl border border-slate-300/60 dark:border-slate-700/60 bg-white/40 dark:bg-slate-900/40 flex items-center justify-center mb-2.5">
-            <MousePointerClick className="h-5 w-5 text-blue-600/80 dark:text-cyan-400/80" />
-          </div>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 max-w-xs">
+          <MousePointer2 className="h-5 w-5 text-[#667085] dark:text-[#A0A5B1] mb-2" />
+          <p className="text-xs font-medium text-[#667085] dark:text-[#A0A5B1] max-w-xs">
             {isConnected
-              ? '1 finger move & tap · 2 finger scroll & right click · Hold to drag'
-              : 'Touchpad ready — pair & connect a Bluetooth host to transmit HID cursor reports'}
+              ? '1 finger moves cursor · 2 fingers scroll · Use buttons below to click & drag'
+              : '1 finger moves cursor · 2 fingers scroll · Connect a host to send reports'}
           </p>
         </div>
-
-        {/* Click ripple feedback */}
-        {activeRipple && (
-          <span
-            key={activeRipple.id}
-            style={{ left: activeRipple.x - 18, top: activeRipple.y - 18 }}
-            className="pointer-events-none absolute h-9 w-9 rounded-full border-2 border-cyan-400/70 bg-cyan-400/15 animate-ping"
-          />
-        )}
       </div>
 
-      {/* Physical Mouse Buttons + Quick Controls */}
-      <div className="grid grid-cols-12 gap-2.5">
-        <button
-          type="button"
-          onPointerDown={async () => {
-            setGestureHint('Left held');
-            await bluetoothService.triggerHaptic(settings.hapticFeedback, 'light');
-            await bluetoothService.setMouseButtonState(MOUSE_BUTTON_LEFT, true, settings.handedness);
-          }}
-          onPointerUp={async () => {
-            if (!dragLockActive) {
-              await bluetoothService.setMouseButtonState(
-                MOUSE_BUTTON_LEFT,
-                false,
-                settings.handedness
-              );
-            }
-            setGestureHint('Ready');
-          }}
-          onPointerCancel={async () => {
-            if (!dragLockActive) {
-              await bluetoothService.setMouseButtonState(
-                MOUSE_BUTTON_LEFT,
-                false,
-                settings.handedness
-              );
-            }
-          }}
-          className="col-span-5 min-h-[54px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0D1629] hover:bg-slate-50 dark:hover:bg-[#131F38] active:scale-[0.98] text-sm font-semibold text-slate-800 dark:text-slate-100 transition-all flex items-center justify-center"
-        >
-          {primaryLabel}
-        </button>
-
-        <button
-          type="button"
-          onPointerDown={async () => {
-            setGestureHint('Middle held');
-            await bluetoothService.triggerHaptic(settings.hapticFeedback, 'light');
-            await bluetoothService.setMouseButtonState(
-              MOUSE_BUTTON_MIDDLE,
-              true,
-              settings.handedness
-            );
-          }}
-          onPointerUp={async () => {
-            await bluetoothService.setMouseButtonState(
-              MOUSE_BUTTON_MIDDLE,
-              false,
-              settings.handedness
-            );
-            setGestureHint('Ready');
-          }}
-          onPointerCancel={async () => {
-            await bluetoothService.setMouseButtonState(
-              MOUSE_BUTTON_MIDDLE,
-              false,
-              settings.handedness
-            );
-          }}
-          className="col-span-2 min-h-[54px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0D1629] hover:bg-slate-50 dark:hover:bg-[#131F38] active:scale-[0.98] text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all flex items-center justify-center"
-          aria-label="Middle Mouse Button"
-        >
-          Mid
-        </button>
-
-        <button
-          type="button"
-          onPointerDown={async () => {
-            setGestureHint('Right held');
-            await bluetoothService.triggerHaptic(settings.hapticFeedback, 'medium');
-            await bluetoothService.setMouseButtonState(
-              MOUSE_BUTTON_RIGHT,
-              true,
-              settings.handedness
-            );
-          }}
-          onPointerUp={async () => {
-            await bluetoothService.setMouseButtonState(
-              MOUSE_BUTTON_RIGHT,
-              false,
-              settings.handedness
-            );
-            setGestureHint('Ready');
-          }}
-          onPointerCancel={async () => {
-            await bluetoothService.setMouseButtonState(
-              MOUSE_BUTTON_RIGHT,
-              false,
-              settings.handedness
-            );
-          }}
-          className="col-span-5 min-h-[54px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0D1629] hover:bg-slate-50 dark:hover:bg-[#131F38] active:scale-[0.98] text-sm font-semibold text-slate-800 dark:text-slate-100 transition-all flex items-center justify-center"
-        >
-          {secondaryLabel}
-        </button>
-      </div>
-
-      {/* Secondary Actions: Double Click & Drag Lock */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <button
-          type="button"
-          onClick={async () => {
-            setGestureHint('Double click');
-            await bluetoothService.triggerHaptic(settings.hapticFeedback, 'medium');
-            await bluetoothService.doubleClickLeft(settings.handedness);
-          }}
-          className="min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B1221] hover:bg-slate-50 dark:hover:bg-[#121D33] text-xs font-medium text-slate-700 dark:text-slate-200 transition-colors flex items-center justify-center gap-2"
-        >
-          <GripHorizontal className="h-3.5 w-3.5 text-blue-600 dark:text-cyan-400" />
-          <span>Double Click</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={toggleDragLock}
-          aria-pressed={dragLockActive}
-          className={`min-h-[44px] rounded-xl border text-xs font-medium transition-colors flex items-center justify-center gap-2 ${
-            dragLockActive
-              ? 'border-cyan-500 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
-              : 'border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B1221] hover:bg-slate-50 dark:hover:bg-[#121D33] text-slate-700 dark:text-slate-200'
-          }`}
-        >
-          <Lock className="h-3.5 w-3.5" />
-          <span>{dragLockActive ? 'Drag Lock: On' : 'Drag & Drop Lock'}</span>
-        </button>
-      </div>
+      {/* Physical-Style Mouse Buttons & Custom Mapped Slots */}
+      <MouseButtonsBar
+        settings={settings}
+        isConnected={isConnected}
+        dragLockActive={dragLockActive}
+        onToggleDragLock={() => void toggleDragLock()}
+        onSetDragLock={setDragLockActive}
+        onGestureHint={setGestureHint}
+        activeProfile={activeProfile}
+        compact={compact}
+      />
     </div>
   );
 }

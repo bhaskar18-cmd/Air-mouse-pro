@@ -15,6 +15,7 @@
 
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-display);
+    text-wrap: balance;
   }
 
   code, pre, .font-mono {
@@ -34,16 +35,6 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Precision touchpad dot matrix */
-.touchpad-grid {
-  background-image: radial-gradient(rgba(56, 189, 248, 0.16) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.dark .touchpad-grid {
-  background-image: radial-gradient(rgba(56, 189, 248, 0.14) 1px, transparent 1px);
-}
-
 /* Prevent overscroll bounce on touchpad & keyboard */
 .touch-surface {
   touch-action: none;
@@ -59,3 +50,4 @@
     transition-duration: 0.01ms !important;
   }
 }
+

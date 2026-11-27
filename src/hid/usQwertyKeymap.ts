@@ -196,3 +196,131 @@ export function mapTextToHidSequence(text: string): TextMappingResult {
     unsupportedChars: Array.from(unsupportedSet),
   };
 }
+
+export type CustomizableKeyGroup =
+  | 'letters'
+  | 'numbers'
+  | 'function'
+  | 'modifiers'
+  | 'navigation'
+  | 'editing'
+  | 'symbols';
+
+export interface CustomizableKeyDefinition {
+  keyId: string;
+  label: string;
+  shortLabel: string;
+  group: CustomizableKeyGroup;
+  keycode?: number;
+  modBit?: number;
+}
+
+export const CUSTOMIZABLE_KEYS: CustomizableKeyDefinition[] = [
+  // Function Keys F1..F12
+  { keyId: 'key_f1', label: 'F1', shortLabel: 'F1', group: 'function', keycode: HID_KEY.F1 },
+  { keyId: 'key_f2', label: 'F2', shortLabel: 'F2', group: 'function', keycode: HID_KEY.F2 },
+  { keyId: 'key_f3', label: 'F3', shortLabel: 'F3', group: 'function', keycode: HID_KEY.F3 },
+  { keyId: 'key_f4', label: 'F4', shortLabel: 'F4', group: 'function', keycode: HID_KEY.F4 },
+  { keyId: 'key_f5', label: 'F5', shortLabel: 'F5', group: 'function', keycode: HID_KEY.F5 },
+  { keyId: 'key_f6', label: 'F6', shortLabel: 'F6', group: 'function', keycode: HID_KEY.F6 },
+  { keyId: 'key_f7', label: 'F7', shortLabel: 'F7', group: 'function', keycode: HID_KEY.F7 },
+  { keyId: 'key_f8', label: 'F8', shortLabel: 'F8', group: 'function', keycode: HID_KEY.F8 },
+  { keyId: 'key_f9', label: 'F9', shortLabel: 'F9', group: 'function', keycode: HID_KEY.F9 },
+  { keyId: 'key_f10', label: 'F10', shortLabel: 'F10', group: 'function', keycode: HID_KEY.F10 },
+  { keyId: 'key_f11', label: 'F11', shortLabel: 'F11', group: 'function', keycode: HID_KEY.F11 },
+  { keyId: 'key_f12', label: 'F12', shortLabel: 'F12', group: 'function', keycode: HID_KEY.F12 },
+
+  // Numbers 1..0
+  { keyId: 'key_1', label: '1', shortLabel: '1', group: 'numbers', keycode: HID_KEY.NUM_1 },
+  { keyId: 'key_2', label: '2', shortLabel: '2', group: 'numbers', keycode: HID_KEY.NUM_2 },
+  { keyId: 'key_3', label: '3', shortLabel: '3', group: 'numbers', keycode: HID_KEY.NUM_3 },
+  { keyId: 'key_4', label: '4', shortLabel: '4', group: 'numbers', keycode: HID_KEY.NUM_4 },
+  { keyId: 'key_5', label: '5', shortLabel: '5', group: 'numbers', keycode: HID_KEY.NUM_5 },
+  { keyId: 'key_6', label: '6', shortLabel: '6', group: 'numbers', keycode: HID_KEY.NUM_6 },
+  { keyId: 'key_7', label: '7', shortLabel: '7', group: 'numbers', keycode: HID_KEY.NUM_7 },
+  { keyId: 'key_8', label: '8', shortLabel: '8', group: 'numbers', keycode: HID_KEY.NUM_8 },
+  { keyId: 'key_9', label: '9', shortLabel: '9', group: 'numbers', keycode: HID_KEY.NUM_9 },
+  { keyId: 'key_0', label: '0', shortLabel: '0', group: 'numbers', keycode: HID_KEY.NUM_0 },
+
+  // Letters A..Z
+  { keyId: 'key_q', label: 'Q', shortLabel: 'Q', group: 'letters', keycode: HID_KEY.Q },
+  { keyId: 'key_w', label: 'W', shortLabel: 'W', group: 'letters', keycode: HID_KEY.W },
+  { keyId: 'key_e', label: 'E', shortLabel: 'E', group: 'letters', keycode: HID_KEY.E },
+  { keyId: 'key_r', label: 'R', shortLabel: 'R', group: 'letters', keycode: HID_KEY.R },
+  { keyId: 'key_t', label: 'T', shortLabel: 'T', group: 'letters', keycode: HID_KEY.T },
+  { keyId: 'key_y', label: 'Y', shortLabel: 'Y', group: 'letters', keycode: HID_KEY.Y },
+  { keyId: 'key_u', label: 'U', shortLabel: 'U', group: 'letters', keycode: HID_KEY.U },
+  { keyId: 'key_i', label: 'I', shortLabel: 'I', group: 'letters', keycode: HID_KEY.I },
+  { keyId: 'key_o', label: 'O', shortLabel: 'O', group: 'letters', keycode: HID_KEY.O },
+  { keyId: 'key_p', label: 'P', shortLabel: 'P', group: 'letters', keycode: HID_KEY.P },
+  { keyId: 'key_a', label: 'A', shortLabel: 'A', group: 'letters', keycode: HID_KEY.A },
+  { keyId: 'key_s', label: 'S', shortLabel: 'S', group: 'letters', keycode: HID_KEY.S },
+  { keyId: 'key_d', label: 'D', shortLabel: 'D', group: 'letters', keycode: HID_KEY.D },
+  { keyId: 'key_f', label: 'F', shortLabel: 'F', group: 'letters', keycode: HID_KEY.F },
+  { keyId: 'key_g', label: 'G', shortLabel: 'G', group: 'letters', keycode: HID_KEY.G },
+  { keyId: 'key_h', label: 'H', shortLabel: 'H', group: 'letters', keycode: HID_KEY.H },
+  { keyId: 'key_j', label: 'J', shortLabel: 'J', group: 'letters', keycode: HID_KEY.J },
+  { keyId: 'key_k', label: 'K', shortLabel: 'K', group: 'letters', keycode: HID_KEY.K },
+  { keyId: 'key_l', label: 'L', shortLabel: 'L', group: 'letters', keycode: HID_KEY.L },
+  { keyId: 'key_z', label: 'Z', shortLabel: 'Z', group: 'letters', keycode: HID_KEY.Z },
+  { keyId: 'key_x', label: 'X', shortLabel: 'X', group: 'letters', keycode: HID_KEY.X },
+  { keyId: 'key_c', label: 'C', shortLabel: 'C', group: 'letters', keycode: HID_KEY.C },
+  { keyId: 'key_v', label: 'V', shortLabel: 'V', group: 'letters', keycode: HID_KEY.V },
+  { keyId: 'key_b', label: 'B', shortLabel: 'B', group: 'letters', keycode: HID_KEY.B },
+  { keyId: 'key_n', label: 'N', shortLabel: 'N', group: 'letters', keycode: HID_KEY.N },
+  { keyId: 'key_m', label: 'M', shortLabel: 'M', group: 'letters', keycode: HID_KEY.M },
+
+  // Modifiers
+  { keyId: 'mod_ctrl', label: 'Ctrl', shortLabel: 'Ctrl', group: 'modifiers', modBit: KEY_MOD_LCTRL },
+  { keyId: 'mod_shift', label: 'Shift', shortLabel: 'Shift', group: 'modifiers', modBit: KEY_MOD_LSHIFT },
+  { keyId: 'mod_alt', label: 'Alt', shortLabel: 'Alt', group: 'modifiers', modBit: KEY_MOD_LALT },
+  { keyId: 'mod_win', label: 'Win / Super', shortLabel: 'Win', group: 'modifiers', modBit: KEY_MOD_LGUI },
+
+  // Editing & System
+  { keyId: 'key_escape', label: 'Escape', shortLabel: 'Esc', group: 'editing', keycode: HID_KEY.ESCAPE },
+  { keyId: 'key_tab', label: 'Tab', shortLabel: 'Tab', group: 'editing', keycode: HID_KEY.TAB },
+  { keyId: 'key_caps_lock', label: 'Caps Lock', shortLabel: 'Caps', group: 'editing', keycode: HID_KEY.CAPS_LOCK },
+  { keyId: 'key_backspace', label: 'Backspace', shortLabel: 'Bksp', group: 'editing', keycode: HID_KEY.BACKSPACE },
+  { keyId: 'key_enter', label: 'Enter / Return', shortLabel: 'Enter', group: 'editing', keycode: HID_KEY.ENTER },
+  { keyId: 'key_space', label: 'Spacebar', shortLabel: 'Space', group: 'editing', keycode: HID_KEY.SPACE },
+  { keyId: 'key_delete', label: 'Delete', shortLabel: 'Del', group: 'editing', keycode: HID_KEY.DELETE },
+  { keyId: 'key_insert', label: 'Insert', shortLabel: 'Ins', group: 'editing', keycode: HID_KEY.INSERT },
+  { keyId: 'key_print_screen', label: 'Print Screen', shortLabel: 'PrtSc', group: 'editing', keycode: HID_KEY.PRINT_SCREEN },
+
+  // Navigation
+  { keyId: 'key_up', label: 'Up Arrow', shortLabel: 'Up', group: 'navigation', keycode: HID_KEY.UP_ARROW },
+  { keyId: 'key_down', label: 'Down Arrow', shortLabel: 'Down', group: 'navigation', keycode: HID_KEY.DOWN_ARROW },
+  { keyId: 'key_left', label: 'Left Arrow', shortLabel: 'Left', group: 'navigation', keycode: HID_KEY.LEFT_ARROW },
+  { keyId: 'key_right', label: 'Right Arrow', shortLabel: 'Right', group: 'navigation', keycode: HID_KEY.RIGHT_ARROW },
+  { keyId: 'key_home', label: 'Home', shortLabel: 'Home', group: 'navigation', keycode: HID_KEY.HOME },
+  { keyId: 'key_end', label: 'End', shortLabel: 'End', group: 'navigation', keycode: HID_KEY.END },
+  { keyId: 'key_page_up', label: 'Page Up', shortLabel: 'PgUp', group: 'navigation', keycode: HID_KEY.PAGE_UP },
+  { keyId: 'key_page_down', label: 'Page Down', shortLabel: 'PgDn', group: 'navigation', keycode: HID_KEY.PAGE_DOWN },
+
+  // Symbols
+  { keyId: 'key_grave', label: 'Grave (`)', shortLabel: '`', group: 'symbols', keycode: HID_KEY.GRAVE },
+  { keyId: 'key_minus', label: 'Minus (-)', shortLabel: '-', group: 'symbols', keycode: HID_KEY.MINUS },
+  { keyId: 'key_equal', label: 'Equal (=)', shortLabel: '=', group: 'symbols', keycode: HID_KEY.EQUAL },
+  { keyId: 'key_lbracket', label: 'Left Bracket ([)', shortLabel: '[', group: 'symbols', keycode: HID_KEY.LEFT_BRACKET },
+  { keyId: 'key_rbracket', label: 'Right Bracket (])', shortLabel: ']', group: 'symbols', keycode: HID_KEY.RIGHT_BRACKET },
+  { keyId: 'key_backslash', label: 'Backslash (\\)', shortLabel: '\\', group: 'symbols', keycode: HID_KEY.BACKSLASH },
+  { keyId: 'key_semicolon', label: 'Semicolon (;)', shortLabel: ';', group: 'symbols', keycode: HID_KEY.SEMICOLON },
+  { keyId: 'key_apostrophe', label: "Apostrophe (')", shortLabel: "'", group: 'symbols', keycode: HID_KEY.APOSTROPHE },
+  { keyId: 'key_comma', label: 'Comma (,)', shortLabel: ',', group: 'symbols', keycode: HID_KEY.COMMA },
+  { keyId: 'key_period', label: 'Period (.)', shortLabel: '.', group: 'symbols', keycode: HID_KEY.PERIOD },
+  { keyId: 'key_slash', label: 'Slash (/)', shortLabel: '/', group: 'symbols', keycode: HID_KEY.SLASH },
+];
+
+const KEY_DEFINITION_MAP = new Map<string, CustomizableKeyDefinition>(
+  CUSTOMIZABLE_KEYS.map((item) => [item.keyId, item])
+);
+
+export function getKeyDefinitionById(keyId: string): CustomizableKeyDefinition | undefined {
+  return KEY_DEFINITION_MAP.get(keyId);
+}
+
+export function getKeyNameFromHidCode(keycode: number): string {
+  const match = CUSTOMIZABLE_KEYS.find((k) => k.keycode === keycode);
+  return match ? match.shortLabel : `0x${keycode.toString(16).toUpperCase()}`;
+}
+

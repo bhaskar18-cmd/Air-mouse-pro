@@ -8,6 +8,7 @@ package com.bluemouse.app
 object HidReportDescriptor {
     const val REPORT_ID_MOUSE: Int = 1
     const val REPORT_ID_KEYBOARD: Int = 2
+    const val REPORT_ID_CONSUMER: Int = 3
 
     val DESCRIPTOR: ByteArray = byteArrayOf(
         // ==========================================
@@ -100,6 +101,23 @@ object HidReportDescriptor {
         0x29.toByte(), 0x65.toByte(), //   Usage Maximum (101)
         0x81.toByte(), 0x00.toByte(), //   Input (Data, Array)
 
+        0xC0.toByte(),                // End Collection (Application)
+
+        // ==========================================
+        // Consumer Control Collection (Report ID 3)
+        // Media Play/Pause, Volume, Track, Browser Back/Forward/Refresh
+        // ==========================================
+        0x05.toByte(), 0x0C.toByte(), // Usage Page (Consumer)
+        0x09.toByte(), 0x01.toByte(), // Usage (Consumer Control)
+        0xA1.toByte(), 0x01.toByte(), // Collection (Application)
+        0x85.toByte(), 0x03.toByte(), //   Report ID (3)
+        0x15.toByte(), 0x00.toByte(), //   Logical Minimum (0)
+        0x26.toByte(), 0xFF.toByte(), 0x03.toByte(), // Logical Maximum (1023)
+        0x19.toByte(), 0x00.toByte(), //   Usage Minimum (0)
+        0x2A.toByte(), 0xFF.toByte(), 0x03.toByte(), // Usage Maximum (1023)
+        0x75.toByte(), 0x10.toByte(), //   Report Size (16)
+        0x95.toByte(), 0x01.toByte(), //   Report Count (1)
+        0x81.toByte(), 0x00.toByte(), //   Input (Data, Array, Absolute)
         0xC0.toByte()                 // End Collection (Application)
     )
 }

@@ -10,11 +10,13 @@ import { ConfirmDisconnectModal } from './components/ConfirmDisconnectModal';
 import { FeedbackToast, type ToastNotice } from './components/FeedbackToast';
 import { OnboardingModal } from './components/OnboardingModal';
 import { useBluetoothHid } from './hooks/useBluetoothHid';
+import { useDeviceProfiles } from './hooks/useDeviceProfiles';
 import { useSettings } from './hooks/useSettings';
 import { CombinedScreen } from './screens/CombinedScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { KeyboardScreen } from './screens/KeyboardScreen';
 import { MouseScreen } from './screens/MouseScreen';
+import { ProfilesScreen } from './screens/ProfilesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { isOnboardingCompleted, markOnboardingCompleted } from './services/settingsStorage';
 import type { AppScreen, PairedBluetoothDevice } from './types/bluetooth';
@@ -51,6 +53,7 @@ export default function App() {
   );
 
   const bt = useBluetoothHid(settings, handleSaveLastDevice);
+  const profiles = useDeviceProfiles(settings, bt.status.connectedDevice, bt.pairedDevices);
 
   const handlePrimaryHeaderAction = async () => {
     if (bt.status.connectionPhase === 'connected') {
@@ -167,6 +170,7 @@ export default function App() {
             pairedDevices={bt.pairedDevices}
             history={bt.history}
             isBusy={bt.isBusy}
+            activeProfile={profiles.activeProfile}
             onRequestPermissions={() => void handleRequestPermissions()}
             onEnableBluetooth={() => void handleEnableBluetooth()}
             onRegisterHid={() => void handleRegisterHid()}
@@ -187,11 +191,13 @@ export default function App() {
 
         {activeScreen === 'mouse' && (
           <MouseScreen
-            settings={settings}
+            settings={profiles.effectiveSettings}
             status={bt.status}
             diagnostics={bt.diagnostics}
+            activeProfile={profiles.activeProfile}
             onNavigate={setActiveScreen}
-            onUpdateSettings={(patch) => {
+            onUpdateProfileTouchpad={(patch) => {
+              profiles.updateProfileTouchpad(patch);
               updateSettings(patch);
               if (patch.handedness) {
                 showToast(
@@ -205,17 +211,45 @@ export default function App() {
 
         {activeScreen === 'keyboard' && (
           <KeyboardScreen
-            settings={settings}
+            settings={profiles.effectiveSettings}
             status={bt.status}
             diagnostics={bt.diagnostics}
+            activeProfile={profiles.activeProfile}
+            onNavigate={setActiveScreen}
           />
         )}
 
         {activeScreen === 'combined' && (
           <CombinedScreen
-            settings={settings}
+            settings={profiles.effectiveSettings}
             status={bt.status}
             diagnostics={bt.diagnostics}
+            activeProfile={profiles.activeProfile}
+            onNavigate={setActiveScreen}
+          />
+        )}
+
+        {activeScreen === 'profiles' && (
+          <ProfilesScreen
+            connectedDevice={bt.status.connectedDevice}
+            allDevices={profiles.allDeviceEntries}
+            activeDeviceAddress={profiles.activeDeviceAddress}
+            activeDeviceEntry={profiles.activeDeviceEntry}
+            activeProfile={profiles.activeProfile}
+            onSelectDevice={(addr) => profiles.selectDeviceForEditing(addr)}
+            onSwitchProfile={(id) => profiles.switchProfile(id)}
+            onCreateProfile={(tpl, name) => profiles.createProfile(tpl, name)}
+            onRenameProfile={(id, name) => profiles.renameProfile(id, name)}
+            onDuplicateProfile={(id) => profiles.duplicateProfile(id)}
+            onDeleteProfile={(id) => profiles.deleteProfile(id)}
+            onSetDefaultProfile={(id) => profiles.setDefaultProfile(id)}
+            onResetProfile={(id) => profiles.resetProfileToTemplate(id)}
+            onSetKeyMapping={(keyId, binding) => profiles.setKeyMapping(keyId, binding)}
+            onSetMouseMapping={(slotId, binding) => profiles.setMouseMapping(slotId, binding)}
+            onUpdateTouchpad={(patch) => profiles.updateProfileTouchpad(patch)}
+            onExportJson={profiles.exportActiveProfile}
+            onImportJson={(json) => profiles.importProfileJson(json)}
+            onNotify={(tone, message) => showToast(tone, message)}
           />
         )}
 

@@ -1,4 +1,4 @@
-export type AppScreen = 'dashboard' | 'mouse' | 'keyboard' | 'combined' | 'settings';
+export type AppScreen = 'dashboard' | 'mouse' | 'keyboard' | 'combined' | 'profiles' | 'settings';
 
 export type BluetoothHardwareState =
   | 'unknown'
@@ -77,9 +77,13 @@ export interface KeyboardReportPayload {
   keycodes: number[]; // Up to 6 HID Usage IDs (6KRO)
 }
 
+export interface ConsumerReportPayload {
+  usageCode: number; // 16-bit Consumer Page (0x0C) usage ID (0x0000 = release)
+}
+
 export interface HidPacketDiagnostic {
   timestamp: number;
-  type: 'mouse' | 'keyboard';
+  type: 'mouse' | 'keyboard' | 'consumer';
   reportId: number;
   bytesHex: string;
   summary: string;
@@ -111,3 +115,94 @@ export interface TestingChecklistItem {
   expectedResult: string;
   completed: boolean;
 }
+
+export type ActionCategory = 'keyboard' | 'shortcut' | 'mouse' | 'media' | 'system';
+
+export type ActionOsScope = 'universal' | 'windows' | 'android';
+
+export type CustomActionType =
+  | 'key_tap'
+  | 'key_combo'
+  | 'mouse_click'
+  | 'mouse_double_click'
+  | 'mouse_scroll'
+  | 'consumer_tap'
+  | 'drag_lock_toggle'
+  | 'noop';
+
+export interface HidActionDefinition {
+  id: string;
+  label: string;
+  shortLabel: string;
+  description: string;
+  category: ActionCategory;
+  osScope: ActionOsScope;
+  actionType: CustomActionType;
+  keycode?: number;
+  modifiers?: number;
+  keycodes?: number[];
+  mouseButtonMask?: number;
+  wheelDelta?: number;
+  hWheelDelta?: number;
+  consumerUsage?: number;
+  badge?: string;
+}
+
+export type CustomKeyBinding =
+  | {
+      kind: 'library';
+      actionId: string;
+    }
+  | {
+      kind: 'custom_combo';
+      label: string;
+      modifiers: number;
+      keycodes: number[];
+      description?: string;
+    };
+
+export type MouseControlSlotId =
+  | 'left_click'
+  | 'right_click'
+  | 'middle_click'
+  | 'double_click'
+  | 'aux_back'
+  | 'aux_forward'
+  | 'scroll_up'
+  | 'scroll_down';
+
+export type ProfileTemplateId = 'default' | 'gaming' | 'office' | 'browsing' | 'custom';
+
+export interface ProfileTouchpadSettings {
+  mouseSensitivity: number;
+  pointerSpeed: PointerAccelerationCurve;
+  scrollSpeed: number;
+  naturalScrolling: boolean;
+  handedness: 'right' | 'left';
+}
+
+export interface DeviceProfile {
+  id: string;
+  name: string;
+  templateId: ProfileTemplateId;
+  createdAt: number;
+  updatedAt: number;
+  keyMappings: Record<string, CustomKeyBinding>;
+  mouseMappings: Partial<Record<MouseControlSlotId, CustomKeyBinding>>;
+  touchpad: ProfileTouchpadSettings;
+}
+
+export interface DeviceConfigEntry {
+  deviceAddress: string;
+  deviceName: string;
+  activeProfileId: string;
+  defaultProfileId: string;
+  profiles: DeviceProfile[];
+  lastSeenAt: number;
+}
+
+export interface DeviceProfileStore {
+  version: 1;
+  devices: Record<string, DeviceConfigEntry>;
+}
+

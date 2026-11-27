@@ -4,6 +4,7 @@ import type {
   BluetoothHardwareState,
   BluetoothStatusSnapshot,
   BluetoothSupportInfo,
+  ConsumerReportPayload,
   HidRegistrationState,
   KeyboardReportPayload,
   MouseReportPayload,
@@ -31,6 +32,7 @@ export interface BluetoothHIDPluginInterface {
   disconnectDevice(): Promise<{ initiated: boolean }>;
   sendMouseReport(options: MouseReportPayload): Promise<{ sent: boolean }>;
   sendKeyboardReport(options: KeyboardReportPayload): Promise<{ sent: boolean }>;
+  sendConsumerReport(options: ConsumerReportPayload): Promise<{ sent: boolean }>;
   getConnectionStatus(): Promise<BluetoothStatusSnapshot>;
   addListener(
     eventName: 'bluetoothStateChanged',
@@ -181,6 +183,13 @@ export const bluetoothHidBridge = {
       return { sent: false };
     }
     return NativeBluetoothHID.sendKeyboardReport(payload);
+  },
+
+  async sendConsumerReport(payload: ConsumerReportPayload) {
+    if (!isNativeAndroidRuntime()) {
+      return { sent: false };
+    }
+    return NativeBluetoothHID.sendConsumerReport(payload);
   },
 
   async getConnectionStatus(): Promise<BluetoothStatusSnapshot> {

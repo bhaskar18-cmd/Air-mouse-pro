@@ -1,10 +1,12 @@
-import { Hand, Sliders } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, Hand, Sliders } from 'lucide-react';
 import { HidDiagnosticsStrip } from '../components/HidDiagnosticsStrip';
 import { TouchpadSurface } from '../components/TouchpadSurface';
 import type {
   AppScreen,
   BlueMouseSettings,
   BluetoothStatusSnapshot,
+  DeviceProfile,
   HidPacketDiagnostic,
 } from '../types/bluetooth';
 
@@ -12,104 +14,92 @@ interface MouseScreenProps {
   settings: BlueMouseSettings;
   status: BluetoothStatusSnapshot;
   diagnostics: HidPacketDiagnostic[];
+  activeProfile: DeviceProfile | null;
   onNavigate: (screen: AppScreen) => void;
-  onUpdateSettings: (patch: Partial<BlueMouseSettings>) => void;
+  onUpdateProfileTouchpad: (patch: Partial<BlueMouseSettings>) => void;
 }
 
 export function MouseScreen({
   settings,
   status,
   diagnostics,
+  activeProfile,
   onNavigate,
-  onUpdateSettings,
+  onUpdateProfileTouchpad,
 }: MouseScreenProps) {
   const isConnected = status.connectionPhase === 'connected';
+  const [showQuickTune, setShowQuickTune] = useState(false);
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Header Row */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Wireless Mouse
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+    <div className="flex flex-col gap-3 -mx-1 sm:mx-0">
+      {/* Compact Header Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1 sm:px-0">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#172033] dark:text-[#F4F5F7]">
+              Wireless Mouse
+            </h1>
+            {activeProfile && (
+              <button
+                type="button"
+                onClick={() => onNavigate('profiles')}
+                className="text-xs font-medium text-[#2563EB] dark:text-[#6B9BFF] hover:underline truncate max-w-[160px]"
+                title="Change device profile"
+              >
+                · {activeProfile.name}
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-[#667085] dark:text-[#A0A5B1] truncate">
             {isConnected && status.connectedDevice
-              ? `Sending relative HID pointer reports to ${status.connectedDevice.name}`
+              ? `Connected to ${status.connectedDevice.name}`
               : status.isNativeAndroid
-                ? 'Not connected to a Bluetooth host — connect from Dashboard to control a cursor'
-                : 'Browser preview — install Android APK to transmit real Bluetooth HID reports'}
+                ? 'Not connected — open Dashboard to connect a host'
+                : 'Preview mode — build Android APK for live Bluetooth HID'}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             onClick={() =>
-              onUpdateSettings({
+              onUpdateProfileTouchpad({
                 handedness: settings.handedness === 'right' ? 'left' : 'right',
               })
             }
-            className="min-h-[40px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] text-xs font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2 whitespace-nowrap"
+            className="min-h-[36px] px-3 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] text-xs font-medium text-[#172033] dark:text-[#F4F5F7] flex items-center gap-1.5 whitespace-nowrap"
           >
-            <Hand className="h-3.5 w-3.5 text-blue-600 dark:text-cyan-400" />
-            <span>{settings.handedness === 'right' ? 'Right-Handed' : 'Left-Handed'}</span>
+            <Hand className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#6B9BFF]" />
+            <span>{settings.handedness === 'right' ? 'Right' : 'Left'}</span>
           </button>
 
           <button
             type="button"
-            onClick={() => onNavigate('settings')}
-            className="min-h-[40px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] text-xs font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2 whitespace-nowrap"
+            onClick={() => setShowQuickTune((v) => !v)}
+            className={`min-h-[36px] px-3 rounded-xl border text-xs font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors duration-150 ${
+              showQuickTune
+                ? 'border-[#2563EB] dark:border-[#6B9BFF] bg-[#EFF4FF] dark:bg-[#232A38] text-[#2563EB] dark:text-[#6B9BFF]'
+                : 'border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] text-[#172033] dark:text-[#F4F5F7]'
+            }`}
           >
-            <Sliders className="h-3.5 w-3.5 text-blue-600 dark:text-cyan-400" />
-            <span>Tune Sensitivity</span>
+            <Sliders className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#6B9BFF]" />
+            <span>Tune</span>
+            {showQuickTune ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* Main Touchpad + Side Gesture Guide on Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-8">
-          <TouchpadSurface settings={settings} isConnected={isConnected} />
-        </div>
-
-        <aside className="lg:col-span-4 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 flex flex-col gap-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-            Touchpad Gestures &amp; Tuning
-          </h2>
-
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/70">
-              <span className="text-slate-600 dark:text-slate-400">1-Finger Move</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">Move pointer</span>
-            </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/70">
-              <span className="text-slate-600 dark:text-slate-400">1-Finger Tap</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">Left click</span>
-            </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/70">
-              <span className="text-slate-600 dark:text-slate-400">Double Tap</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">Double click</span>
-            </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/70">
-              <span className="text-slate-600 dark:text-slate-400">2-Finger Tap</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">Right click</span>
-            </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/70">
-              <span className="text-slate-600 dark:text-slate-400">2-Finger Drag</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">Scroll V &amp; H</span>
-            </div>
-            <div className="flex items-center justify-between py-1.5">
-              <span className="text-slate-600 dark:text-slate-400">Long Press (450ms)</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">Drag &amp; Drop</span>
-            </div>
-          </div>
-
-          {/* Quick Inline Sensitivity Slider */}
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
-            <div className="flex items-center justify-between text-xs font-medium mb-2">
-              <span className="text-slate-600 dark:text-slate-300">Pointer Sensitivity</span>
-              <span className="font-mono tabular-nums text-blue-600 dark:text-cyan-400">
+      {/* Collapsible Inline Touchpad Tuning Bar */}
+      {showQuickTune && (
+        <div className="rounded-2xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+          <div>
+            <div className="flex items-center justify-between text-xs font-medium mb-1">
+              <span className="text-[#667085] dark:text-[#A0A5B1]">Sensitivity</span>
+              <span className="font-mono tabular-nums text-[#2563EB] dark:text-[#6B9BFF]">
                 {settings.mouseSensitivity.toFixed(2)}x
               </span>
             </div>
@@ -120,14 +110,67 @@ export function MouseScreen({
               step={0.05}
               value={settings.mouseSensitivity}
               onChange={(e) =>
-                onUpdateSettings({ mouseSensitivity: parseFloat(e.target.value) })
+                onUpdateProfileTouchpad({ mouseSensitivity: parseFloat(e.target.value) })
               }
-              className="w-full accent-blue-600 dark:accent-cyan-400"
+              className="w-full accent-[#2563EB] dark:accent-[#6B9BFF]"
               aria-label="Pointer sensitivity"
             />
           </div>
-        </aside>
-      </div>
+
+          <div>
+            <div className="flex items-center justify-between text-xs font-medium mb-1">
+              <span className="text-[#667085] dark:text-[#A0A5B1]">Scroll Speed</span>
+              <span className="font-mono tabular-nums text-[#2563EB] dark:text-[#6B9BFF]">
+                {settings.scrollSpeed.toFixed(2)}x
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0.5}
+              max={3.0}
+              step={0.05}
+              value={settings.scrollSpeed}
+              onChange={(e) =>
+                onUpdateProfileTouchpad({ scrollSpeed: parseFloat(e.target.value) })
+              }
+              className="w-full accent-[#2563EB] dark:accent-[#6B9BFF]"
+              aria-label="Scroll speed"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                onUpdateProfileTouchpad({ naturalScrolling: !settings.naturalScrolling })
+              }
+              className={`min-h-[38px] px-3 rounded-xl border text-xs font-medium flex-1 ${
+                settings.naturalScrolling
+                  ? 'border-[#2563EB] dark:border-[#6B9BFF] bg-[#EFF4FF] dark:bg-[#232A38] text-[#2563EB] dark:text-[#6B9BFF]'
+                  : 'border-[#E5E7EB] dark:border-[#30343D] text-[#667085] dark:text-[#A0A5B1]'
+              }`}
+            >
+              {settings.naturalScrolling ? 'Natural Scroll: On' : 'Natural Scroll: Off'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('profiles')}
+              className="min-h-[38px] px-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] text-xs font-semibold whitespace-nowrap"
+            >
+              Edit Controls
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded Full-Width Responsive Touchpad + Dedicated Mouse Buttons */}
+      <TouchpadSurface
+        settings={settings}
+        expanded
+        isConnected={isConnected}
+        activeProfile={activeProfile}
+      />
 
       {settings.showHidDiagnostics && (
         <HidDiagnosticsStrip diagnostics={diagnostics} isConnected={isConnected} />

@@ -10,6 +10,7 @@ import {
   Loader2,
   Send,
 } from 'lucide-react';
+import { resolveBindingToAction } from '../hid/actionLibrary';
 import {
   KEY_MOD_LALT,
   KEY_MOD_LCTRL,
@@ -18,14 +19,18 @@ import {
 } from '../hid/hidReports';
 import { COMMON_SHORTCUTS, HID_KEY, mapTextToHidSequence } from '../hid/usQwertyKeymap';
 import { bluetoothService } from '../services/bluetoothService';
+import type { DeviceProfile, HidActionDefinition } from '../types/bluetooth';
 
 interface VirtualKeyboardProps {
   hapticEnabled: boolean;
+  handedness?: 'right' | 'left';
   compact?: boolean;
   isConnected?: boolean;
+  activeProfile?: DeviceProfile | null;
 }
 
 interface KeyDef {
+  keyId: string;
   label: string;
   shiftLabel?: string;
   keycode: number;
@@ -36,104 +41,106 @@ interface KeyDef {
 }
 
 const FUNCTION_ROW: KeyDef[] = [
-  { label: 'Esc', keycode: HID_KEY.ESCAPE },
-  { label: 'F1', keycode: HID_KEY.F1 },
-  { label: 'F2', keycode: HID_KEY.F2 },
-  { label: 'F3', keycode: HID_KEY.F3 },
-  { label: 'F4', keycode: HID_KEY.F4 },
-  { label: 'F5', keycode: HID_KEY.F5 },
-  { label: 'F6', keycode: HID_KEY.F6 },
-  { label: 'F7', keycode: HID_KEY.F7 },
-  { label: 'F8', keycode: HID_KEY.F8 },
-  { label: 'F9', keycode: HID_KEY.F9 },
-  { label: 'F10', keycode: HID_KEY.F10 },
-  { label: 'F11', keycode: HID_KEY.F11 },
-  { label: 'F12', keycode: HID_KEY.F12 },
-  { label: 'Del', keycode: HID_KEY.DELETE },
+  { keyId: 'key_escape', label: 'Esc', keycode: HID_KEY.ESCAPE },
+  { keyId: 'key_f1', label: 'F1', keycode: HID_KEY.F1 },
+  { keyId: 'key_f2', label: 'F2', keycode: HID_KEY.F2 },
+  { keyId: 'key_f3', label: 'F3', keycode: HID_KEY.F3 },
+  { keyId: 'key_f4', label: 'F4', keycode: HID_KEY.F4 },
+  { keyId: 'key_f5', label: 'F5', keycode: HID_KEY.F5 },
+  { keyId: 'key_f6', label: 'F6', keycode: HID_KEY.F6 },
+  { keyId: 'key_f7', label: 'F7', keycode: HID_KEY.F7 },
+  { keyId: 'key_f8', label: 'F8', keycode: HID_KEY.F8 },
+  { keyId: 'key_f9', label: 'F9', keycode: HID_KEY.F9 },
+  { keyId: 'key_f10', label: 'F10', keycode: HID_KEY.F10 },
+  { keyId: 'key_f11', label: 'F11', keycode: HID_KEY.F11 },
+  { keyId: 'key_f12', label: 'F12', keycode: HID_KEY.F12 },
+  { keyId: 'key_delete', label: 'Del', keycode: HID_KEY.DELETE },
 ];
 
 const NUMBER_ROW: KeyDef[] = [
-  { label: '`', shiftLabel: '~', keycode: HID_KEY.GRAVE },
-  { label: '1', shiftLabel: '!', keycode: HID_KEY.NUM_1 },
-  { label: '2', shiftLabel: '@', keycode: HID_KEY.NUM_2 },
-  { label: '3', shiftLabel: '#', keycode: HID_KEY.NUM_3 },
-  { label: '4', shiftLabel: '$', keycode: HID_KEY.NUM_4 },
-  { label: '5', shiftLabel: '%', keycode: HID_KEY.NUM_5 },
-  { label: '6', shiftLabel: '^', keycode: HID_KEY.NUM_6 },
-  { label: '7', shiftLabel: '&', keycode: HID_KEY.NUM_7 },
-  { label: '8', shiftLabel: '*', keycode: HID_KEY.NUM_8 },
-  { label: '9', shiftLabel: '(', keycode: HID_KEY.NUM_9 },
-  { label: '0', shiftLabel: ')', keycode: HID_KEY.NUM_0 },
-  { label: '-', shiftLabel: '_', keycode: HID_KEY.MINUS },
-  { label: '=', shiftLabel: '+', keycode: HID_KEY.EQUAL },
+  { keyId: 'key_grave', label: '`', shiftLabel: '~', keycode: HID_KEY.GRAVE },
+  { keyId: 'key_1', label: '1', shiftLabel: '!', keycode: HID_KEY.NUM_1 },
+  { keyId: 'key_2', label: '2', shiftLabel: '@', keycode: HID_KEY.NUM_2 },
+  { keyId: 'key_3', label: '3', shiftLabel: '#', keycode: HID_KEY.NUM_3 },
+  { keyId: 'key_4', label: '4', shiftLabel: '$', keycode: HID_KEY.NUM_4 },
+  { keyId: 'key_5', label: '5', shiftLabel: '%', keycode: HID_KEY.NUM_5 },
+  { keyId: 'key_6', label: '6', shiftLabel: '^', keycode: HID_KEY.NUM_6 },
+  { keyId: 'key_7', label: '7', shiftLabel: '&', keycode: HID_KEY.NUM_7 },
+  { keyId: 'key_8', label: '8', shiftLabel: '*', keycode: HID_KEY.NUM_8 },
+  { keyId: 'key_9', label: '9', shiftLabel: '(', keycode: HID_KEY.NUM_9 },
+  { keyId: 'key_0', label: '0', shiftLabel: ')', keycode: HID_KEY.NUM_0 },
+  { keyId: 'key_minus', label: '-', shiftLabel: '_', keycode: HID_KEY.MINUS },
+  { keyId: 'key_equal', label: '=', shiftLabel: '+', keycode: HID_KEY.EQUAL },
 ];
 
 const QWERTY_ROW_1: KeyDef[] = [
-  { label: 'q', keycode: HID_KEY.Q },
-  { label: 'w', keycode: HID_KEY.W },
-  { label: 'e', keycode: HID_KEY.E },
-  { label: 'r', keycode: HID_KEY.R },
-  { label: 't', keycode: HID_KEY.T },
-  { label: 'y', keycode: HID_KEY.Y },
-  { label: 'u', keycode: HID_KEY.U },
-  { label: 'i', keycode: HID_KEY.I },
-  { label: 'o', keycode: HID_KEY.O },
-  { label: 'p', keycode: HID_KEY.P },
+  { keyId: 'key_q', label: 'q', keycode: HID_KEY.Q },
+  { keyId: 'key_w', label: 'w', keycode: HID_KEY.W },
+  { keyId: 'key_e', label: 'e', keycode: HID_KEY.E },
+  { keyId: 'key_r', label: 'r', keycode: HID_KEY.R },
+  { keyId: 'key_t', label: 't', keycode: HID_KEY.T },
+  { keyId: 'key_y', label: 'y', keycode: HID_KEY.Y },
+  { keyId: 'key_u', label: 'u', keycode: HID_KEY.U },
+  { keyId: 'key_i', label: 'i', keycode: HID_KEY.I },
+  { keyId: 'key_o', label: 'o', keycode: HID_KEY.O },
+  { keyId: 'key_p', label: 'p', keycode: HID_KEY.P },
 ];
 
 const QWERTY_ROW_2: KeyDef[] = [
-  { label: 'a', keycode: HID_KEY.A },
-  { label: 's', keycode: HID_KEY.S },
-  { label: 'd', keycode: HID_KEY.D },
-  { label: 'f', keycode: HID_KEY.F },
-  { label: 'g', keycode: HID_KEY.G },
-  { label: 'h', keycode: HID_KEY.H },
-  { label: 'j', keycode: HID_KEY.J },
-  { label: 'k', keycode: HID_KEY.K },
-  { label: 'l', keycode: HID_KEY.L },
+  { keyId: 'key_a', label: 'a', keycode: HID_KEY.A },
+  { keyId: 'key_s', label: 's', keycode: HID_KEY.S },
+  { keyId: 'key_d', label: 'd', keycode: HID_KEY.D },
+  { keyId: 'key_f', label: 'f', keycode: HID_KEY.F },
+  { keyId: 'key_g', label: 'g', keycode: HID_KEY.G },
+  { keyId: 'key_h', label: 'h', keycode: HID_KEY.H },
+  { keyId: 'key_j', label: 'j', keycode: HID_KEY.J },
+  { keyId: 'key_k', label: 'k', keycode: HID_KEY.K },
+  { keyId: 'key_l', label: 'l', keycode: HID_KEY.L },
 ];
 
 const QWERTY_ROW_3: KeyDef[] = [
-  { label: 'z', keycode: HID_KEY.Z },
-  { label: 'x', keycode: HID_KEY.X },
-  { label: 'c', keycode: HID_KEY.C },
-  { label: 'v', keycode: HID_KEY.V },
-  { label: 'b', keycode: HID_KEY.B },
-  { label: 'n', keycode: HID_KEY.N },
-  { label: 'm', keycode: HID_KEY.M },
+  { keyId: 'key_z', label: 'z', keycode: HID_KEY.Z },
+  { keyId: 'key_x', label: 'x', keycode: HID_KEY.X },
+  { keyId: 'key_c', label: 'c', keycode: HID_KEY.C },
+  { keyId: 'key_v', label: 'v', keycode: HID_KEY.V },
+  { keyId: 'key_b', label: 'b', keycode: HID_KEY.B },
+  { keyId: 'key_n', label: 'n', keycode: HID_KEY.N },
+  { keyId: 'key_m', label: 'm', keycode: HID_KEY.M },
 ];
 
 const SYMBOLS_ROW_1: KeyDef[] = [
-  { label: '[', shiftLabel: '{', keycode: HID_KEY.LEFT_BRACKET },
-  { label: ']', shiftLabel: '}', keycode: HID_KEY.RIGHT_BRACKET },
-  { label: '\\', shiftLabel: '|', keycode: HID_KEY.BACKSLASH },
-  { label: ';', shiftLabel: ':', keycode: HID_KEY.SEMICOLON },
-  { label: "'", shiftLabel: '"', keycode: HID_KEY.APOSTROPHE },
-  { label: ',', shiftLabel: '<', keycode: HID_KEY.COMMA },
-  { label: '.', shiftLabel: '>', keycode: HID_KEY.PERIOD },
-  { label: '/', shiftLabel: '?', keycode: HID_KEY.SLASH },
+  { keyId: 'key_lbracket', label: '[', shiftLabel: '{', keycode: HID_KEY.LEFT_BRACKET },
+  { keyId: 'key_rbracket', label: ']', shiftLabel: '}', keycode: HID_KEY.RIGHT_BRACKET },
+  { keyId: 'key_backslash', label: '\\', shiftLabel: '|', keycode: HID_KEY.BACKSLASH },
+  { keyId: 'key_semicolon', label: ';', shiftLabel: ':', keycode: HID_KEY.SEMICOLON },
+  { keyId: 'key_apostrophe', label: "'", shiftLabel: '"', keycode: HID_KEY.APOSTROPHE },
+  { keyId: 'key_comma', label: ',', shiftLabel: '<', keycode: HID_KEY.COMMA },
+  { keyId: 'key_period', label: '.', shiftLabel: '>', keycode: HID_KEY.PERIOD },
+  { keyId: 'key_slash', label: '/', shiftLabel: '?', keycode: HID_KEY.SLASH },
 ];
 
 const NAV_KEYS: KeyDef[] = [
-  { label: 'Home', keycode: HID_KEY.HOME },
-  { label: 'End', keycode: HID_KEY.END },
-  { label: 'PgUp', keycode: HID_KEY.PAGE_UP },
-  { label: 'PgDn', keycode: HID_KEY.PAGE_DOWN },
-  { label: 'Ins', keycode: HID_KEY.INSERT },
-  { label: 'PrtSc', keycode: HID_KEY.PRINT_SCREEN },
+  { keyId: 'key_home', label: 'Home', keycode: HID_KEY.HOME },
+  { keyId: 'key_end', label: 'End', keycode: HID_KEY.END },
+  { keyId: 'key_page_up', label: 'PgUp', keycode: HID_KEY.PAGE_UP },
+  { keyId: 'key_page_down', label: 'PgDn', keycode: HID_KEY.PAGE_DOWN },
+  { keyId: 'key_insert', label: 'Ins', keycode: HID_KEY.INSERT },
+  { keyId: 'key_print_screen', label: 'PrtSc', keycode: HID_KEY.PRINT_SCREEN },
 ];
 
 export function VirtualKeyboard({
   hapticEnabled,
+  handedness = 'right',
   compact = false,
   isConnected = false,
+  activeProfile = null,
 }: VirtualKeyboardProps) {
   const [layoutMode, setLayoutMode] = useState<'qwerty' | 'symbols'>('qwerty');
   const [showFnRow, setShowFnRow] = useState(!compact);
   const [shiftLatched, setShiftLatched] = useState(false);
   const [capsActive, setCapsActive] = useState(false);
   const [heldModifiers, setHeldModifiers] = useState(0);
-  const [pressedKeycodes, setPressedKeycodes] = useState<number[]>([]);
+  const [pressedKeyIds, setPressedKeyIds] = useState<string[]>([]);
   const [textInput, setTextInput] = useState('');
   const [unicodeWarning, setUnicodeWarning] = useState<string | null>(null);
   const [sendingText, setSendingText] = useState(false);
@@ -142,8 +149,16 @@ export function VirtualKeyboard({
   const effectiveShift = (heldModifiers & KEY_MOD_LSHIFT) !== 0 || shiftLatched;
   const uppercase = effectiveShift !== capsActive;
 
+  const getCustomAction = useCallback(
+    (keyId: string): HidActionDefinition | null => {
+      const binding = activeProfile?.keyMappings?.[keyId];
+      return binding ? resolveBindingToAction(binding) : null;
+    },
+    [activeProfile]
+  );
+
   const releaseAllSafe = useCallback(() => {
-    setPressedKeycodes([]);
+    setPressedKeyIds([]);
     setHeldModifiers(0);
     setShiftLatched(false);
     setLastActionHint('All keys & modifiers released');
@@ -152,7 +167,7 @@ export function VirtualKeyboard({
 
   useEffect(() => {
     if (!isConnected) {
-      setPressedKeycodes([]);
+      setPressedKeyIds([]);
       setHeldModifiers(0);
       setShiftLatched(false);
     }
@@ -168,15 +183,56 @@ export function VirtualKeyboard({
   }, [releaseAllSafe]);
 
   const syncKeyboardReport = useCallback(
-    (mods: number, keys: number[]) => {
+    (mods: number, keyIds: string[]) => {
       const finalMods = shiftLatched ? mods | KEY_MOD_LSHIFT : mods;
-      void bluetoothService.setKeyboardState(finalMods, keys);
+      const codes = keyIds
+        .map((id) => {
+          const custom = getCustomAction(id);
+          if (custom?.actionType === 'key_tap' && typeof custom.keycode === 'number') {
+            return custom.keycode;
+          }
+          // Lookup standard keycode across known rows
+          const allDefs = [
+            ...FUNCTION_ROW,
+            ...NUMBER_ROW,
+            ...QWERTY_ROW_1,
+            ...QWERTY_ROW_2,
+            ...QWERTY_ROW_3,
+            ...SYMBOLS_ROW_1,
+            ...NAV_KEYS,
+            { keyId: 'key_backspace', label: 'Bksp', keycode: HID_KEY.BACKSPACE },
+            { keyId: 'key_enter', label: 'Enter', keycode: HID_KEY.ENTER },
+            { keyId: 'key_space', label: 'Space', keycode: HID_KEY.SPACE },
+            { keyId: 'key_tab', label: 'Tab', keycode: HID_KEY.TAB },
+            { keyId: 'key_left', label: 'Left', keycode: HID_KEY.LEFT_ARROW },
+            { keyId: 'key_up', label: 'Up', keycode: HID_KEY.UP_ARROW },
+            { keyId: 'key_down', label: 'Down', keycode: HID_KEY.DOWN_ARROW },
+            { keyId: 'key_right', label: 'Right', keycode: HID_KEY.RIGHT_ARROW },
+          ];
+          return allDefs.find((d) => d.keyId === id)?.keycode ?? 0;
+        })
+        .filter((k) => k > 0)
+        .slice(0, 6);
+
+      void bluetoothService.setKeyboardState(finalMods, codes);
     },
-    [shiftLatched]
+    [getCustomAction, shiftLatched]
   );
 
   const handleKeyDown = async (key: KeyDef) => {
     await bluetoothService.triggerHaptic(hapticEnabled, 'light');
+
+    const customAction = getCustomAction(key.keyId);
+    if (customAction) {
+      setPressedKeyIds((prev) => (prev.includes(key.keyId) ? prev : [...prev, key.keyId]));
+      setLastActionHint(`${key.label.toUpperCase()} -> ${customAction.label}`);
+      await bluetoothService.executeActionPress(
+        customAction,
+        handedness,
+        shiftLatched ? heldModifiers | KEY_MOD_LSHIFT : heldModifiers
+      );
+      return;
+    }
 
     if (key.isCaps) {
       setCapsActive((c) => !c);
@@ -195,32 +251,43 @@ export function VirtualKeyboard({
           ? heldModifiers & ~key.modBit
           : heldModifiers | key.modBit;
       setHeldModifiers(nextMods);
-      syncKeyboardReport(nextMods, pressedKeycodes);
+      syncKeyboardReport(nextMods, pressedKeyIds);
       return;
     }
 
-    const nextKeys = pressedKeycodes.includes(key.keycode)
-      ? pressedKeycodes
-      : [...pressedKeycodes, key.keycode].slice(0, 6);
-    setPressedKeycodes(nextKeys);
+    const nextKeys = pressedKeyIds.includes(key.keyId)
+      ? pressedKeyIds
+      : [...pressedKeyIds, key.keyId].slice(0, 6);
+    setPressedKeyIds(nextKeys);
     syncKeyboardReport(heldModifiers, nextKeys);
   };
 
   const handleKeyUp = (key: KeyDef) => {
+    const customAction = getCustomAction(key.keyId);
+    if (customAction) {
+      if (!pressedKeyIds.includes(key.keyId)) return;
+      setPressedKeyIds((prev) => prev.filter((id) => id !== key.keyId));
+      void bluetoothService.executeActionRelease(customAction, handedness);
+      if (shiftLatched || heldModifiers !== 0) {
+        setShiftLatched(false);
+        setHeldModifiers(0);
+      }
+      return;
+    }
+
     if (key.isCaps || key.isShift || key.modBit) return;
-    if (!pressedKeycodes.includes(key.keycode)) return;
+    if (!pressedKeyIds.includes(key.keyId)) return;
 
-    const nextKeys = pressedKeycodes.filter((k) => k !== key.keycode);
-    setPressedKeycodes(nextKeys);
+    const nextKeys = pressedKeyIds.filter((k) => k !== key.keyId);
+    setPressedKeyIds(nextKeys);
 
-    const modsToSend = shiftLatched ? heldModifiers | KEY_MOD_LSHIFT : heldModifiers;
-    void bluetoothService.setKeyboardState(modsToSend, nextKeys);
+    syncKeyboardReport(heldModifiers, nextKeys);
 
     // Clear one-shot shift latch and sticky modifiers after sending a non-modifier key
     if (shiftLatched || heldModifiers !== 0) {
       setShiftLatched(false);
       setHeldModifiers(0);
-      void bluetoothService.setKeyboardState(0, nextKeys);
+      void bluetoothService.setKeyboardState(0, []);
     }
   };
 
@@ -246,23 +313,27 @@ export function VirtualKeyboard({
     }
   };
 
-  const renderKeyButton = (key: KeyDef, customClass = '') => {
-    const isPressed = pressedKeycodes.includes(key.keycode);
+  const renderKeyButton = (key: KeyDef, customClass = '', icon?: React.ReactNode) => {
+    const isPressed = pressedKeyIds.includes(key.keyId);
+    const customAction = getCustomAction(key.keyId);
     const isModOn =
-      (key.isShift && shiftLatched) ||
-      (key.isCaps && capsActive) ||
-      (key.modBit !== undefined && (heldModifiers & key.modBit) !== 0);
+      !customAction &&
+      ((key.isShift && shiftLatched) ||
+        (key.isCaps && capsActive) ||
+        (key.modBit !== undefined && (heldModifiers & key.modBit) !== 0));
 
-    let display = key.label;
-    if (key.shiftLabel && effectiveShift) {
-      display = key.shiftLabel;
-    } else if (/^[a-z]$/.test(key.label)) {
-      display = uppercase ? key.label.toUpperCase() : key.label;
+    let display = customAction ? customAction.shortLabel : key.label;
+    if (!customAction) {
+      if (key.shiftLabel && effectiveShift) {
+        display = key.shiftLabel;
+      } else if (/^[a-z]$/.test(key.label)) {
+        display = uppercase ? key.label.toUpperCase() : key.label;
+      }
     }
 
     return (
       <button
-        key={`${key.label}-${key.keycode}`}
+        key={key.keyId}
         type="button"
         onPointerDown={(e) => {
           e.preventDefault();
@@ -274,13 +345,20 @@ export function VirtualKeyboard({
         }}
         onPointerCancel={() => handleKeyUp(key)}
         onPointerLeave={() => handleKeyUp(key)}
-        className={`touch-surface select-none min-h-[42px] rounded-xl border text-xs sm:text-sm font-medium transition-all flex items-center justify-center ${
+        className={`touch-surface relative select-none min-h-[42px] rounded-lg border text-xs sm:text-sm font-medium transition-colors duration-100 flex items-center justify-center px-1 ${
           isPressed || isModOn
-            ? 'border-cyan-400 bg-blue-600 text-white shadow-sm translate-y-[1px]'
-            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-[#16233E]'
+            ? 'border-[#2563EB] dark:border-[#6B9BFF] bg-[#2563EB] dark:bg-[#6B9BFF] text-white dark:text-[#111318]'
+            : customAction
+              ? 'border-[#2563EB]/45 dark:border-[#6B9BFF]/45 bg-[#EFF4FF] dark:bg-[#232A38] text-[#2563EB] dark:text-[#6B9BFF]'
+              : 'border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#222630] text-[#172033] dark:text-[#F4F5F7] hover:bg-[#F7F8FA] dark:hover:bg-[#2A2F3B]'
         } ${customClass}`}
+        title={customAction ? `Custom mapped: ${customAction.label}` : key.label}
       >
-        {display}
+        {customAction ? (
+          <span className="truncate text-[10px] font-semibold leading-tight">{display}</span>
+        ) : (
+          icon ?? display
+        )}
       </button>
     );
   };
@@ -289,14 +367,14 @@ export function VirtualKeyboard({
     <div className="flex flex-col gap-3 w-full">
       {/* Toolbar: Layout Toggle + Function Keys Toggle + Release All */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-200/70 dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-[#ECEEF2] dark:bg-[#1A1D24] border border-[#E5E7EB] dark:border-[#30343D]">
           <button
             type="button"
             onClick={() => setLayoutMode('qwerty')}
-            className={`min-h-[36px] px-3 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap ${
+            className={`min-h-[34px] px-3 rounded-lg text-xs font-semibold transition-colors duration-150 whitespace-nowrap ${
               layoutMode === 'qwerty'
-                ? 'bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-white dark:bg-[#6B9BFF] text-[#172033] dark:text-[#111318]'
+                : 'text-[#667085] dark:text-[#A0A5B1]'
             }`}
           >
             QWERTY
@@ -304,10 +382,10 @@ export function VirtualKeyboard({
           <button
             type="button"
             onClick={() => setLayoutMode('symbols')}
-            className={`min-h-[36px] px-3 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap ${
+            className={`min-h-[34px] px-3 rounded-lg text-xs font-semibold transition-colors duration-150 whitespace-nowrap ${
               layoutMode === 'symbols'
-                ? 'bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-white dark:bg-[#6B9BFF] text-[#172033] dark:text-[#111318]'
+                : 'text-[#667085] dark:text-[#A0A5B1]'
             }`}
           >
             Symbols &amp; Nav
@@ -318,10 +396,10 @@ export function VirtualKeyboard({
           <button
             type="button"
             onClick={() => setShowFnRow((v) => !v)}
-            className={`min-h-[38px] px-3 rounded-xl border text-xs font-medium transition-colors whitespace-nowrap ${
+            className={`min-h-[36px] px-3 rounded-xl border text-xs font-medium transition-colors duration-150 whitespace-nowrap ${
               showFnRow
-                ? 'border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-cyan-300'
-                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] text-slate-600 dark:text-slate-300'
+                ? 'border-[#2563EB] dark:border-[#6B9BFF] bg-[#EFF4FF] dark:bg-[#232A38] text-[#2563EB] dark:text-[#6B9BFF]'
+                : 'border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] text-[#667085] dark:text-[#A0A5B1]'
             }`}
           >
             {showFnRow ? 'Hide F1–F12' : 'Show F1–F12'}
@@ -329,7 +407,7 @@ export function VirtualKeyboard({
           <button
             type="button"
             onClick={releaseAllSafe}
-            className="min-h-[38px] px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white whitespace-nowrap"
+            className="min-h-[36px] px-3 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] text-xs font-medium text-[#667085] dark:text-[#A0A5B1] hover:text-[#172033] dark:hover:text-[#F4F5F7] whitespace-nowrap"
           >
             Release Keys
           </button>
@@ -348,7 +426,7 @@ export function VirtualKeyboard({
               await bluetoothService.sendShortcut(sc.modifiers, sc.keycodes);
               setLastActionHint(`Triggered ${sc.label} (${sc.description})`);
             }}
-            className="min-h-[38px] px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] hover:border-blue-500/50 text-xs font-mono font-medium text-slate-700 dark:text-cyan-300 shrink-0 whitespace-nowrap transition-colors active:scale-95"
+            className="min-h-[36px] px-3 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] hover:border-[#2563EB]/50 dark:hover:border-[#6B9BFF]/50 text-xs font-mono font-medium text-[#172033] dark:text-[#F4F5F7] shrink-0 whitespace-nowrap transition-colors duration-150 active:opacity-75"
           >
             {sc.label}
           </button>
@@ -356,12 +434,12 @@ export function VirtualKeyboard({
       </div>
 
       {lastActionHint && (
-        <p className="text-xs font-mono text-blue-600 dark:text-cyan-400 px-1">
+        <p className="text-xs font-mono text-[#2563EB] dark:text-[#6B9BFF] px-1">
           {lastActionHint}
         </p>
       )}
 
-      {/* Type & Send Text Bar (US QWERTY verification) */}
+      {/* Type & Send Text Bar */}
       {!compact && (
         <form onSubmit={handleSendText} className="flex gap-2">
           <input
@@ -380,12 +458,12 @@ export function VirtualKeyboard({
               }
             }}
             placeholder="Type text to send via US QWERTY HID reports..."
-            className="flex-1 min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] px-3.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+            className="flex-1 min-h-[44px] rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] px-3.5 text-sm text-[#172033] dark:text-[#F4F5F7] placeholder:text-[#667085] dark:placeholder:text-[#A0A5B1] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 dark:focus:ring-[#6B9BFF]/30"
           />
           <button
             type="submit"
             disabled={sendingText || !textInput.trim()}
-            className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-colors"
+            className="min-h-[44px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] disabled:opacity-45 text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-colors"
           >
             {sendingText ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -398,14 +476,14 @@ export function VirtualKeyboard({
       )}
 
       {unicodeWarning && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-xs text-amber-800 dark:text-amber-200">
-          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-3.5 py-2.5 text-xs text-amber-800 dark:text-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <span>{unicodeWarning}</span>
         </div>
       )}
 
-      {/* Keyboard Surface */}
-      <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-[#081020] p-2.5 sm:p-3.5 flex flex-col gap-1.5">
+      {/* Clean Keyboard Surface */}
+      <div className="rounded-2xl border border-[#E5E7EB] dark:border-[#30343D] bg-[#ECEEF2] dark:bg-[#16181E] p-2.5 sm:p-3.5 flex flex-col gap-1.5">
         {/* Function Keys Row */}
         {showFnRow && (
           <div className="grid grid-cols-7 sm:grid-cols-14 gap-1">
@@ -427,33 +505,25 @@ export function VirtualKeyboard({
 
             {/* QWERTY Row 2 */}
             <div className="grid grid-cols-10 gap-1">
-              {renderKeyButton({ label: 'Caps', keycode: HID_KEY.CAPS_LOCK, isCaps: true }, 'text-xs')}
+              {renderKeyButton(
+                { keyId: 'key_caps_lock', label: 'Caps', keycode: HID_KEY.CAPS_LOCK, isCaps: true },
+                'text-xs'
+              )}
               {QWERTY_ROW_2.map((k) => renderKeyButton(k))}
             </div>
 
             {/* QWERTY Row 3 */}
             <div className="grid grid-cols-10 gap-1">
               {renderKeyButton(
-                { label: 'Shift', keycode: 0, isShift: true },
+                { keyId: 'mod_shift', label: 'Shift', keycode: 0, isShift: true },
                 'col-span-2 text-xs'
               )}
               {QWERTY_ROW_3.map((k) => renderKeyButton(k))}
-              <button
-                type="button"
-                onPointerDown={(e) => {
-                  e.preventDefault();
-                  void handleKeyDown({ label: 'Bksp', keycode: HID_KEY.BACKSPACE });
-                }}
-                onPointerUp={(e) => {
-                  e.preventDefault();
-                  handleKeyUp({ label: 'Bksp', keycode: HID_KEY.BACKSPACE });
-                }}
-                onPointerCancel={() => handleKeyUp({ label: 'Bksp', keycode: HID_KEY.BACKSPACE })}
-                className="touch-surface min-h-[42px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] text-slate-800 dark:text-slate-100 flex items-center justify-center active:bg-blue-600 active:text-white"
-                aria-label="Backspace"
-              >
+              {renderKeyButton(
+                { keyId: 'key_backspace', label: 'Bksp', keycode: HID_KEY.BACKSPACE },
+                '',
                 <Delete className="h-4 w-4" />
-              </button>
+              )}
             </div>
           </>
         ) : (
@@ -470,121 +540,87 @@ export function VirtualKeyboard({
 
             {/* Arrow Cluster */}
             <div className="grid grid-cols-4 gap-1.5 pt-1">
-              <button
-                type="button"
-                onPointerDown={() => void handleKeyDown({ label: 'Left', keycode: HID_KEY.LEFT_ARROW })}
-                onPointerUp={() => handleKeyUp({ label: 'Left', keycode: HID_KEY.LEFT_ARROW })}
-                onPointerCancel={() => handleKeyUp({ label: 'Left', keycode: HID_KEY.LEFT_ARROW })}
-                className="touch-surface min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-                aria-label="Left Arrow"
-              >
+              {renderKeyButton(
+                { keyId: 'key_left', label: 'Left', keycode: HID_KEY.LEFT_ARROW },
+                'min-h-[44px]',
                 <ArrowLeft className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onPointerDown={() => void handleKeyDown({ label: 'Up', keycode: HID_KEY.UP_ARROW })}
-                onPointerUp={() => handleKeyUp({ label: 'Up', keycode: HID_KEY.UP_ARROW })}
-                onPointerCancel={() => handleKeyUp({ label: 'Up', keycode: HID_KEY.UP_ARROW })}
-                className="touch-surface min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-                aria-label="Up Arrow"
-              >
+              )}
+              {renderKeyButton(
+                { keyId: 'key_up', label: 'Up', keycode: HID_KEY.UP_ARROW },
+                'min-h-[44px]',
                 <ArrowUp className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onPointerDown={() => void handleKeyDown({ label: 'Down', keycode: HID_KEY.DOWN_ARROW })}
-                onPointerUp={() => handleKeyUp({ label: 'Down', keycode: HID_KEY.DOWN_ARROW })}
-                onPointerCancel={() => handleKeyUp({ label: 'Down', keycode: HID_KEY.DOWN_ARROW })}
-                className="touch-surface min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-                aria-label="Down Arrow"
-              >
+              )}
+              {renderKeyButton(
+                { keyId: 'key_down', label: 'Down', keycode: HID_KEY.DOWN_ARROW },
+                'min-h-[44px]',
                 <ArrowDown className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onPointerDown={() => void handleKeyDown({ label: 'Right', keycode: HID_KEY.RIGHT_ARROW })}
-                onPointerUp={() => handleKeyUp({ label: 'Right', keycode: HID_KEY.RIGHT_ARROW })}
-                onPointerCancel={() => handleKeyUp({ label: 'Right', keycode: HID_KEY.RIGHT_ARROW })}
-                className="touch-surface min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-                aria-label="Right Arrow"
-              >
+              )}
+              {renderKeyButton(
+                { keyId: 'key_right', label: 'Right', keycode: HID_KEY.RIGHT_ARROW },
+                'min-h-[44px]',
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              )}
             </div>
           </>
         )}
 
         {/* Bottom Modifier + Spacebar + Enter Row */}
         <div className="grid grid-cols-12 gap-1 pt-0.5">
-          {renderKeyButton({ label: 'Ctrl', keycode: 0, modBit: KEY_MOD_LCTRL }, 'col-span-2 text-xs')}
-          {renderKeyButton({ label: 'Win', keycode: 0, modBit: KEY_MOD_LGUI }, 'col-span-1 text-xs')}
-          {renderKeyButton({ label: 'Alt', keycode: 0, modBit: KEY_MOD_LALT }, 'col-span-2 text-xs')}
-          {renderKeyButton({ label: 'Space', keycode: HID_KEY.SPACE }, 'col-span-4 text-xs')}
-          {renderKeyButton({ label: 'Tab', keycode: HID_KEY.TAB }, 'col-span-1 text-xs')}
-          <button
-            type="button"
-            onPointerDown={(e) => {
-              e.preventDefault();
-              void handleKeyDown({ label: 'Enter', keycode: HID_KEY.ENTER });
-            }}
-            onPointerUp={(e) => {
-              e.preventDefault();
-              handleKeyUp({ label: 'Enter', keycode: HID_KEY.ENTER });
-            }}
-            onPointerCancel={() => handleKeyUp({ label: 'Enter', keycode: HID_KEY.ENTER })}
-            className="touch-surface col-span-2 min-h-[42px] rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-1 text-xs font-semibold active:scale-95 transition-transform"
-            aria-label="Enter"
-          >
-            <CornerDownLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Enter</span>
-          </button>
+          {renderKeyButton(
+            { keyId: 'mod_ctrl', label: 'Ctrl', keycode: 0, modBit: KEY_MOD_LCTRL },
+            'col-span-2 text-xs'
+          )}
+          {renderKeyButton(
+            { keyId: 'mod_win', label: 'Win', keycode: 0, modBit: KEY_MOD_LGUI },
+            'col-span-1 text-xs'
+          )}
+          {renderKeyButton(
+            { keyId: 'mod_alt', label: 'Alt', keycode: 0, modBit: KEY_MOD_LALT },
+            'col-span-2 text-xs'
+          )}
+          {renderKeyButton(
+            { keyId: 'key_space', label: 'Space', keycode: HID_KEY.SPACE },
+            'col-span-4 text-xs'
+          )}
+          {renderKeyButton(
+            { keyId: 'key_tab', label: 'Tab', keycode: HID_KEY.TAB },
+            'col-span-1 text-xs'
+          )}
+          {renderKeyButton(
+            { keyId: 'key_enter', label: 'Enter', keycode: HID_KEY.ENTER },
+            'col-span-2 font-semibold',
+            <span className="flex items-center gap-1">
+              <CornerDownLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Enter</span>
+            </span>
+          )}
         </div>
 
         {/* Always-accessible Arrow row on QWERTY mode */}
         {layoutMode === 'qwerty' && !compact && (
           <div className="grid grid-cols-6 gap-1 pt-0.5">
-            {renderKeyButton({ label: 'Home', keycode: HID_KEY.HOME }, 'text-xs')}
-            <button
-              type="button"
-              onPointerDown={() => void handleKeyDown({ label: 'Left', keycode: HID_KEY.LEFT_ARROW })}
-              onPointerUp={() => handleKeyUp({ label: 'Left', keycode: HID_KEY.LEFT_ARROW })}
-              onPointerCancel={() => handleKeyUp({ label: 'Left', keycode: HID_KEY.LEFT_ARROW })}
-              className="touch-surface min-h-[40px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-              aria-label="Left Arrow"
-            >
+            {renderKeyButton({ keyId: 'key_home', label: 'Home', keycode: HID_KEY.HOME }, 'text-xs')}
+            {renderKeyButton(
+              { keyId: 'key_left', label: 'Left', keycode: HID_KEY.LEFT_ARROW },
+              'min-h-[40px]',
               <ArrowLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onPointerDown={() => void handleKeyDown({ label: 'Up', keycode: HID_KEY.UP_ARROW })}
-              onPointerUp={() => handleKeyUp({ label: 'Up', keycode: HID_KEY.UP_ARROW })}
-              onPointerCancel={() => handleKeyUp({ label: 'Up', keycode: HID_KEY.UP_ARROW })}
-              className="touch-surface min-h-[40px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-              aria-label="Up Arrow"
-            >
+            )}
+            {renderKeyButton(
+              { keyId: 'key_up', label: 'Up', keycode: HID_KEY.UP_ARROW },
+              'min-h-[40px]',
               <ArrowUp className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onPointerDown={() => void handleKeyDown({ label: 'Down', keycode: HID_KEY.DOWN_ARROW })}
-              onPointerUp={() => handleKeyUp({ label: 'Down', keycode: HID_KEY.DOWN_ARROW })}
-              onPointerCancel={() => handleKeyUp({ label: 'Down', keycode: HID_KEY.DOWN_ARROW })}
-              className="touch-surface min-h-[40px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-              aria-label="Down Arrow"
-            >
+            )}
+            {renderKeyButton(
+              { keyId: 'key_down', label: 'Down', keycode: HID_KEY.DOWN_ARROW },
+              'min-h-[40px]',
               <ArrowDown className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onPointerDown={() => void handleKeyDown({ label: 'Right', keycode: HID_KEY.RIGHT_ARROW })}
-              onPointerUp={() => handleKeyUp({ label: 'Right', keycode: HID_KEY.RIGHT_ARROW })}
-              onPointerCancel={() => handleKeyUp({ label: 'Right', keycode: HID_KEY.RIGHT_ARROW })}
-              className="touch-surface min-h-[40px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F192D] flex items-center justify-center text-slate-800 dark:text-slate-100 active:bg-blue-600 active:text-white"
-              aria-label="Right Arrow"
-            >
+            )}
+            {renderKeyButton(
+              { keyId: 'key_right', label: 'Right', keycode: HID_KEY.RIGHT_ARROW },
+              'min-h-[40px]',
               <ArrowRight className="h-4 w-4" />
-            </button>
-            {renderKeyButton({ label: 'End', keycode: HID_KEY.END }, 'text-xs')}
+            )}
+            {renderKeyButton({ keyId: 'key_end', label: 'End', keycode: HID_KEY.END }, 'text-xs')}
           </div>
         )}
       </div>

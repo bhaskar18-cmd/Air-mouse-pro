@@ -393,8 +393,9 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
         val dy = call.getInt("dy") ?: 0
         val wheel = call.getInt("wheel") ?: 0
         val hWheel = call.getInt("hWheel") ?: 0
-        val sent = hidManager.sendMouseReport(buttons, dx, dy, wheel, hWheel)
-        call.resolve(JSObject().apply { put("sent", sent) })
+        hidManager.sendMouseReport(buttons, dx, dy, wheel, hWheel) { sent ->
+            call.resolve(JSObject().apply { put("sent", sent) })
+        }
     }
 
     @PluginMethod
@@ -408,6 +409,13 @@ class BluetoothHIDPlugin : Plugin(), BluetoothHidManager.Listener {
             }
         }
         val sent = hidManager.sendKeyboardReport(modifiers, keycodes)
+        call.resolve(JSObject().apply { put("sent", sent) })
+    }
+
+    @PluginMethod
+    fun sendConsumerReport(call: PluginCall) {
+        val usageCode = call.getInt("usageCode") ?: 0
+        val sent = hidManager.sendConsumerReport(usageCode)
         call.resolve(JSObject().apply { put("sent", sent) })
     }
 

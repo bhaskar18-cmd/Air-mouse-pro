@@ -15,7 +15,7 @@ export function useSettings() {
     }
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-      metaTheme.setAttribute('content', settings.theme === 'dark' ? '#050914' : '#F4F7FB');
+      metaTheme.setAttribute('content', settings.theme === 'dark' ? '#111318' : '#F7F8FA');
     }
     bluetoothService.setHandedness(settings.handedness);
     saveSettings(settings);

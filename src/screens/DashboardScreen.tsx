@@ -3,14 +3,19 @@ import {
   Bluetooth,
   BluetoothConnected,
   BluetoothOff,
-  CheckCircle2,
+  ChevronRight,
   ExternalLink,
   History,
+  Keyboard,
   Laptop,
   Loader2,
+  MousePointer2,
   Radio,
   RefreshCw,
+  Settings,
   ShieldAlert,
+  Sliders,
+  SlidersHorizontal,
   Smartphone,
   Trash2,
 } from 'lucide-react';
@@ -21,6 +26,7 @@ import type {
   BluetoothSupportInfo,
   ConnectionHistoryEntry,
   ConnectionPhase,
+  DeviceProfile,
   PairedBluetoothDevice,
 } from '../types/bluetooth';
 
@@ -42,12 +48,13 @@ interface DashboardScreenProps {
   onClearHistory: () => void;
   onNavigate: (screen: AppScreen) => void;
   onOpenApkGuide: () => void;
+  activeProfile?: DeviceProfile | null;
 }
 
 interface PhaseMeta {
   label: string;
   description: string;
-  toneClass: string;
+  textClass: string;
   icon: typeof Bluetooth;
   spinning?: boolean;
 }
@@ -58,30 +65,30 @@ function getPhaseMeta(phase: ConnectionPhase, status: BluetoothStatusSnapshot): 
       return {
         label: 'Android APK Required',
         description:
-          'You are viewing BlueMouse in a web browser. Native Bluetooth HID Device profiles cannot run in browser tabs; build and install the Android APK to pair over Bluetooth.',
-        toneClass: 'text-amber-600 dark:text-amber-300 bg-amber-500/12 border-amber-500/30',
+          'Viewing in a web browser. Build and install the Android APK on an Android 9+ smartphone to pair over Bluetooth HID.',
+        textClass: 'text-amber-700 dark:text-amber-400',
         icon: Smartphone,
       };
     case 'bluetooth_disabled':
       return {
         label: 'Bluetooth Disabled',
         description: 'Turn on Android Bluetooth to register the HID keyboard and mouse service.',
-        toneClass: 'text-rose-600 dark:text-rose-300 bg-rose-500/12 border-rose-500/30',
+        textClass: 'text-rose-600 dark:text-rose-400',
         icon: BluetoothOff,
       };
     case 'bluetooth_enabled':
       return {
-        label: 'Bluetooth Enabled',
+        label: 'Bluetooth Ready',
         description:
-          'Bluetooth hardware is ready. Register the BlueMouse HID peripheral profile to begin.',
-        toneClass: 'text-blue-600 dark:text-cyan-300 bg-blue-500/12 border-blue-500/30',
+          'Bluetooth radio is enabled. Register the BlueMouse HID profile to connect with a computer.',
+        textClass: 'text-[#2563EB] dark:text-[#6B9BFF]',
         icon: Bluetooth,
       };
     case 'hid_pending':
       return {
-        label: 'HID Registration Pending',
-        description: 'Registering composite Mouse + Keyboard SDP descriptor with Android Bluetooth...',
-        toneClass: 'text-cyan-600 dark:text-cyan-300 bg-cyan-500/12 border-cyan-500/30',
+        label: 'Registering HID Profile',
+        description: 'Registering composite Mouse + Keyboard + Media HID descriptor with Android...',
+        textClass: 'text-[#2563EB] dark:text-[#6B9BFF]',
         icon: Loader2,
         spinning: true,
       };
@@ -89,15 +96,15 @@ function getPhaseMeta(phase: ConnectionPhase, status: BluetoothStatusSnapshot): 
       return {
         label: 'Waiting for Pairing',
         description:
-          'HID profile is active. Make your phone discoverable or select a previously paired host below.',
-        toneClass: 'text-cyan-600 dark:text-cyan-300 bg-cyan-500/12 border-cyan-500/30',
+          'HID service active. Make your smartphone discoverable or select a paired device below.',
+        textClass: 'text-[#2563EB] dark:text-[#6B9BFF]',
         icon: Radio,
       };
     case 'pairing_in_progress':
       return {
-        label: 'Pairing in Progress',
-        description: 'Establishing Bluetooth HID interrupt and control channels with the host...',
-        toneClass: 'text-blue-600 dark:text-blue-300 bg-blue-500/12 border-blue-500/30',
+        label: 'Connecting',
+        description: 'Establishing Bluetooth HID control and interrupt channels...',
+        textClass: 'text-[#2563EB] dark:text-[#6B9BFF]',
         icon: Loader2,
         spinning: true,
       };
@@ -105,9 +112,9 @@ function getPhaseMeta(phase: ConnectionPhase, status: BluetoothStatusSnapshot): 
       return {
         label: 'Connected',
         description: status.connectedDevice
-          ? `Active Bluetooth HID session with ${status.connectedDevice.name}.`
+          ? `Connected to ${status.connectedDevice.name} (${status.connectedDevice.address}).`
           : 'Bluetooth HID session is active.',
-        toneClass: 'text-emerald-600 dark:text-emerald-300 bg-emerald-500/12 border-emerald-500/30',
+        textClass: 'text-emerald-700 dark:text-emerald-400',
         icon: BluetoothConnected,
       };
     case 'connection_failed':
@@ -115,16 +122,16 @@ function getPhaseMeta(phase: ConnectionPhase, status: BluetoothStatusSnapshot): 
         label: 'Connection Failed',
         description:
           status.lastError ||
-          'Could not establish HID connection. Ensure the host accepts incoming HID peripherals or re-pair in system Bluetooth settings.',
-        toneClass: 'text-rose-600 dark:text-rose-300 bg-rose-500/12 border-rose-500/30',
+          'Could not establish HID connection. Ensure the host accepts Bluetooth HID peripherals.',
+        textClass: 'text-rose-600 dark:text-rose-400',
         icon: AlertCircle,
       };
     case 'disconnected':
     default:
       return {
         label: 'Disconnected',
-        description: 'No host is currently connected. Choose a paired device or pair a new host.',
-        toneClass: 'text-slate-700 dark:text-slate-300 bg-slate-500/10 border-slate-400/30',
+        description: 'No host is currently connected. Select a paired host or pair a new computer.',
+        textClass: 'text-[#667085] dark:text-[#A0A5B1]',
         icon: BluetoothOff,
       };
   }
@@ -148,6 +155,7 @@ export function DashboardScreen({
   onClearHistory,
   onNavigate,
   onOpenApkGuide,
+  activeProfile,
 }: DashboardScreenProps) {
   const phaseMeta = getPhaseMeta(status.connectionPhase, status);
   const PhaseIcon = phaseMeta.icon;
@@ -157,39 +165,34 @@ export function DashboardScreen({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Top Hero Connection Card */}
-      <section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-7 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      {/* Primary Connection Summary */}
+      <section className="rounded-2xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] p-5 sm:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="flex items-start gap-4">
-            <BlueMouseLogo size={54} className="shrink-0" />
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <BlueMouseLogo size={48} className="shrink-0" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold tracking-tight text-[#172033] dark:text-[#F4F5F7]">
                   BlueMouse
                 </h1>
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${phaseMeta.toneClass}`}
-                >
-                  <PhaseIcon
-                    className={`h-3.5 w-3.5 ${phaseMeta.spinning ? 'animate-spin' : ''}`}
-                  />
+                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${phaseMeta.textClass}`}>
+                  <PhaseIcon className={`h-3.5 w-3.5 ${phaseMeta.spinning ? 'animate-spin' : ''}`} />
                   <span>{phaseMeta.label}</span>
                 </span>
               </div>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+              <p className="mt-1.5 text-sm text-[#667085] dark:text-[#A0A5B1] max-w-2xl leading-relaxed">
                 {phaseMeta.description}
               </p>
             </div>
           </div>
 
-          {/* Primary Action Cluster */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {needsPermissions && (
               <button
                 type="button"
                 disabled={isBusy}
                 onClick={onRequestPermissions}
-                className="min-h-[44px] px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                className="min-h-[44px] px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors whitespace-nowrap"
               >
                 Grant Bluetooth Permissions
               </button>
@@ -200,7 +203,7 @@ export function DashboardScreen({
                 type="button"
                 disabled={isBusy}
                 onClick={onEnableBluetooth}
-                className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                className="min-h-[44px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] text-sm font-semibold transition-colors whitespace-nowrap"
               >
                 Enable Bluetooth
               </button>
@@ -213,7 +216,7 @@ export function DashboardScreen({
                   type="button"
                   disabled={isBusy}
                   onClick={onRegisterHid}
-                  className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                  className="min-h-[44px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] text-sm font-semibold transition-colors whitespace-nowrap"
                 >
                   Register HID Peripheral
                 </button>
@@ -225,7 +228,7 @@ export function DashboardScreen({
                   type="button"
                   disabled={isBusy}
                   onClick={onMakeDiscoverable}
-                  className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                  className="min-h-[44px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] text-sm font-semibold transition-colors whitespace-nowrap"
                 >
                   Make Discoverable (120s)
                 </button>
@@ -233,7 +236,7 @@ export function DashboardScreen({
                   type="button"
                   disabled={isBusy}
                   onClick={onUnregisterHid}
-                  className="min-h-[44px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors whitespace-nowrap"
+                  className="min-h-[44px] px-4 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] text-[#172033] dark:text-[#F4F5F7] hover:bg-[#F7F8FA] dark:hover:bg-[#222630] text-sm font-medium transition-colors whitespace-nowrap"
                 >
                   Unregister HID
                 </button>
@@ -245,7 +248,7 @@ export function DashboardScreen({
                 <button
                   type="button"
                   onClick={() => onNavigate('mouse')}
-                  className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                  className="min-h-[44px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] text-sm font-semibold transition-colors whitespace-nowrap"
                 >
                   Open Mouse Pad
                 </button>
@@ -253,7 +256,7 @@ export function DashboardScreen({
                   type="button"
                   disabled={isBusy}
                   onClick={onRequestDisconnect}
-                  className="min-h-[44px] px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                  className="min-h-[44px] px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors whitespace-nowrap"
                 >
                   Disconnect
                 </button>
@@ -264,7 +267,7 @@ export function DashboardScreen({
               <button
                 type="button"
                 onClick={onOpenApkGuide}
-                className="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                className="min-h-[44px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] text-sm font-semibold transition-colors whitespace-nowrap"
               >
                 Android Build &amp; APK Guide
               </button>
@@ -274,7 +277,7 @@ export function DashboardScreen({
               type="button"
               onClick={onRefresh}
               disabled={isBusy}
-              className="min-h-[44px] min-w-[44px] px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] hover:bg-slate-100 dark:hover:bg-slate-800/70 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors"
+              className="min-h-[44px] min-w-[44px] px-3 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] hover:bg-[#EEF0F4] dark:hover:bg-[#222630] text-[#667085] dark:text-[#A0A5B1] flex items-center justify-center transition-colors"
               aria-label="Refresh Bluetooth status"
             >
               <RefreshCw className={`h-4 w-4 ${isBusy ? 'animate-spin' : ''}`} />
@@ -282,96 +285,138 @@ export function DashboardScreen({
           </div>
         </div>
 
-        {/* Unsupported Android Hardware Warning */}
+        {/* Clean 3-Metric Status Row separated by hairline dividers */}
+        <div className="mt-5 pt-4 border-t border-[#E5E7EB] dark:border-[#30343D] grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div>
+            <span className="text-xs text-[#667085] dark:text-[#A0A5B1]">Connected Device</span>
+            <p className="mt-0.5 font-semibold text-[#172033] dark:text-[#F4F5F7] truncate">
+              {status.connectedDevice ? status.connectedDevice.name : 'None'}
+            </p>
+          </div>
+          <div>
+            <span className="text-xs text-[#667085] dark:text-[#A0A5B1]">Bluetooth HID Service</span>
+            <p className="mt-0.5 font-semibold text-[#172033] dark:text-[#F4F5F7] capitalize">
+              {status.isNativeAndroid ? `${status.bluetoothState.replace('_', ' ')} · ${status.hidState}` : 'Browser Runtime'}
+            </p>
+          </div>
+          <div>
+            <span className="text-xs text-[#667085] dark:text-[#A0A5B1]">Active Device Profile</span>
+            <p className="mt-0.5 font-semibold text-[#172033] dark:text-[#F4F5F7] truncate">
+              {activeProfile ? activeProfile.name : 'Default Profile'}
+            </p>
+          </div>
+        </div>
+
+        {/* Unsupported Hardware Warning */}
         {status.isNativeAndroid && supportInfo && !supportInfo.hidProfileSupported && (
-          <div className="mt-5 rounded-2xl border border-rose-500/35 bg-rose-500/10 p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
-            <div className="text-xs sm:text-sm text-rose-900 dark:text-rose-100">
-              <p className="font-semibold">Bluetooth HID Device Profile Unsupported</p>
-              <p className="mt-0.5 text-rose-800/90 dark:text-rose-200/90 leading-relaxed">
-                {supportInfo.reason ||
-                  'This Android device or firmware does not expose BluetoothHidDevice (requires Android 9+ with HID Device profile enabled).'}
-              </p>
-            </div>
+          <div className="mt-4 pt-4 border-t border-[#E5E7EB] dark:border-[#30343D] flex items-start gap-2.5 text-xs sm:text-sm text-rose-700 dark:text-rose-400">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <p>
+              <strong>Bluetooth HID Device Profile Unsupported:</strong>{' '}
+              {supportInfo.reason ||
+                'This device does not expose BluetoothHidDevice (requires Android 9+ with HID Device profile support).'}
+            </p>
           </div>
         )}
 
-        {/* Explicit Error State Banner */}
+        {/* Explicit Error Notice */}
         {status.lastError && (
-          <div className="mt-5 rounded-2xl border border-rose-500/35 bg-rose-500/10 p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
-            <div className="text-xs sm:text-sm text-rose-900 dark:text-rose-100">
-              <p className="font-semibold">Bluetooth HID Error</p>
-              <p className="mt-0.5 text-rose-800/90 dark:text-rose-200/90 leading-relaxed">
-                {status.lastError}
-              </p>
-            </div>
+          <div className="mt-4 pt-4 border-t border-[#E5E7EB] dark:border-[#30343D] flex items-start gap-2.5 text-xs sm:text-sm text-rose-700 dark:text-rose-400">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <p>
+              <strong>Bluetooth HID Error:</strong> {status.lastError}
+            </p>
           </div>
         )}
 
-        {/* Browser Environment Notice (Strict Honesty Rule) */}
+        {/* Browser Environment Notice */}
         {!status.isNativeAndroid && (
-          <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <ShieldAlert className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-              <div className="text-xs sm:text-sm text-amber-900 dark:text-amber-100 space-y-1">
-                <p className="font-semibold">
-                  Native Android HID functionality requires the installed Android application
-                </p>
-                <p className="text-amber-800/90 dark:text-amber-200/90 leading-relaxed">
-                  Web browsers cannot act as Bluetooth HID mouse/keyboard peripherals. Explore the
-                  touchpad, keyboard, settings, and HID report formatter here, or follow the build
-                  guide to compile the included Kotlin plugin via Capacitor and Android Studio.
-                </p>
-              </div>
+          <div className="mt-4 pt-4 border-t border-[#E5E7EB] dark:border-[#30343D] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5 text-xs sm:text-sm text-[#667085] dark:text-[#A0A5B1]">
+              <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                Web browsers cannot act as Bluetooth HID peripherals. Use the preview to test the
+                touchpad, keyboard, and device profiles, or build the Android APK for live Bluetooth
+                control.
+              </p>
             </div>
             <button
               type="button"
               onClick={onOpenApkGuide}
-              className="min-h-[38px] px-3.5 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-100 text-xs font-semibold whitespace-nowrap shrink-0"
+              className="min-h-[38px] px-3.5 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] hover:bg-[#F7F8FA] dark:hover:bg-[#222630] text-xs font-semibold text-[#172033] dark:text-[#F4F5F7] whitespace-nowrap shrink-0"
             >
               Open Build Guide
             </button>
           </div>
         )}
-
-        {/* 3-Column Live Hardware Readout */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-5 border-t border-slate-100 dark:border-slate-800/80">
-          <div className="rounded-2xl bg-slate-50 dark:bg-[#081020] px-4 py-3.5 border border-slate-200/70 dark:border-slate-800/70">
-            <span className="text-xs text-slate-500 dark:text-slate-400">Bluetooth Radio</span>
-            <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white capitalize">
-              {status.isNativeAndroid ? status.bluetoothState.replace('_', ' ') : 'Browser Runtime'}
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-slate-50 dark:bg-[#081020] px-4 py-3.5 border border-slate-200/70 dark:border-slate-800/70">
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              HID Service Registration
-            </span>
-            <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white capitalize">
-              {status.hidState}
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-slate-50 dark:bg-[#081020] px-4 py-3.5 border border-slate-200/70 dark:border-slate-800/70">
-            <span className="text-xs text-slate-500 dark:text-slate-400">Connected Host</span>
-            <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white truncate">
-              {status.connectedDevice ? status.connectedDevice.name : 'None'}
-            </p>
-          </div>
-        </div>
       </section>
 
-      {/* Middle Split: Paired Devices + Guided Pairing Tutorial */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Paired Devices Panel */}
-        <section className="lg:col-span-7 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6">
+      {/* Quick Access Mode Launcher */}
+      <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {[
+          {
+            id: 'mouse' as AppScreen,
+            title: 'Mouse Pad',
+            subtitle: 'Expanded cursor surface',
+            icon: MousePointer2,
+          },
+          {
+            id: 'keyboard' as AppScreen,
+            title: 'Keyboard',
+            subtitle: 'Full US QWERTY HID',
+            icon: Keyboard,
+          },
+          {
+            id: 'combined' as AppScreen,
+            title: 'Combined',
+            subtitle: 'Trackpad + keys',
+            icon: SlidersHorizontal,
+          },
+          {
+            id: 'profiles' as AppScreen,
+            title: 'Device Profiles',
+            subtitle: activeProfile ? activeProfile.name : 'Custom controls',
+            icon: Sliders,
+          },
+          {
+            id: 'settings' as AppScreen,
+            title: 'Settings',
+            subtitle: 'Tuning & APK guide',
+            icon: Settings,
+          },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onNavigate(item.id)}
+              className="text-left rounded-2xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] hover:border-[#2563EB]/50 dark:hover:border-[#6B9BFF]/50 p-4 transition-colors duration-150 flex items-center justify-between gap-3 active:opacity-85"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-[#172033] dark:text-[#F4F5F7]">
+                  <Icon className="h-4 w-4 text-[#2563EB] dark:text-[#6B9BFF] shrink-0" />
+                  <span className="text-sm font-semibold truncate">{item.title}</span>
+                </div>
+                <p className="text-xs text-[#667085] dark:text-[#A0A5B1] mt-1 truncate">
+                  {item.subtitle}
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-[#667085] dark:text-[#A0A5B1] shrink-0" />
+            </button>
+          );
+        })}
+      </section>
+
+      {/* Paired Devices + Pairing Guide */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <section className="lg:col-span-7 rounded-2xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-base font-semibold text-[#172033] dark:text-[#F4F5F7]">
                 Paired Bluetooth Hosts
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-[#667085] dark:text-[#A0A5B1] mt-0.5">
                 Devices bonded through Android system Bluetooth settings
               </p>
             </div>
@@ -379,7 +424,7 @@ export function DashboardScreen({
               <button
                 type="button"
                 onClick={onOpenBtSettings}
-                className="min-h-[40px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 whitespace-nowrap"
+                className="min-h-[38px] px-3 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] text-xs font-medium text-[#172033] dark:text-[#F4F5F7] hover:bg-[#F7F8FA] dark:hover:bg-[#222630] flex items-center gap-1.5 whitespace-nowrap"
               >
                 <span>System Bluetooth</span>
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -388,21 +433,21 @@ export function DashboardScreen({
           </div>
 
           {pairedDevices.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700/80 p-7 text-center">
-              <Laptop className="h-8 w-8 mx-auto text-slate-400 dark:text-slate-500 mb-2.5" />
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+            <div className="py-8 text-center">
+              <Laptop className="h-7 w-7 mx-auto text-[#667085] dark:text-[#A0A5B1] mb-2" />
+              <p className="text-sm font-semibold text-[#172033] dark:text-[#F4F5F7]">
                 {status.isNativeAndroid
                   ? 'No bonded Bluetooth devices found'
                   : 'No native Bluetooth adapter in web browser'}
-              </h3>
-              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+              </p>
+              <p className="mt-1 text-xs text-[#667085] dark:text-[#A0A5B1] max-w-md mx-auto leading-relaxed">
                 {status.isNativeAndroid
-                  ? 'Register the HID peripheral above, tap Make Discoverable, then pair your phone from Windows Bluetooth settings. Bonded hosts will appear here.'
-                  : 'BlueMouse never fabricates mock Bluetooth devices. Once compiled and installed on Android, real paired Windows PCs and Android hosts will list here.'}
+                  ? 'Register the HID peripheral above, tap Make Discoverable, then pair from Windows Bluetooth settings.'
+                  : 'Install the compiled Android APK to list real paired Windows and Android Bluetooth hosts here.'}
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-800/80">
+            <ul className="divide-y divide-[#E5E7EB] dark:divide-[#30343D]">
               {pairedDevices.map((device) => {
                 const active = status.connectedDevice?.address === device.address;
                 return (
@@ -411,14 +456,12 @@ export function DashboardScreen({
                     className="py-3.5 flex flex-wrap items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-10 w-10 rounded-xl bg-blue-600/10 dark:bg-blue-500/15 text-blue-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
-                        <Laptop className="h-5 w-5" />
-                      </div>
+                      <Laptop className="h-4 w-4 text-[#2563EB] dark:text-[#6B9BFF] shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                        <p className="text-sm font-semibold text-[#172033] dark:text-[#F4F5F7] truncate">
                           {device.name || 'Unnamed Host'}
                         </p>
-                        <p className="text-xs font-mono tabular-nums text-slate-500 dark:text-slate-400">
+                        <p className="text-xs font-mono tabular-nums text-[#667085] dark:text-[#A0A5B1]">
                           {device.address}
                         </p>
                       </div>
@@ -428,7 +471,7 @@ export function DashboardScreen({
                       <button
                         type="button"
                         onClick={onRequestDisconnect}
-                        className="min-h-[40px] px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold whitespace-nowrap"
+                        className="min-h-[38px] px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold whitespace-nowrap"
                       >
                         Disconnect
                       </button>
@@ -437,7 +480,7 @@ export function DashboardScreen({
                         type="button"
                         disabled={isBusy || status.hidState !== 'registered'}
                         onClick={() => onConnectDevice(device)}
-                        className="min-h-[40px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-45 text-white text-xs font-semibold whitespace-nowrap"
+                        className="min-h-[38px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] dark:text-[#111318] disabled:opacity-45 text-xs font-semibold whitespace-nowrap"
                       >
                         Connect
                       </button>
@@ -449,170 +492,97 @@ export function DashboardScreen({
           )}
         </section>
 
-        {/* System Pairing Tutorial */}
-        <section className="lg:col-span-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-            Bluetooth Pairing Guide
+        <section className="lg:col-span-5 rounded-2xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] p-5 sm:p-6">
+          <h2 className="text-base font-semibold text-[#172033] dark:text-[#F4F5F7] mb-1">
+            Quick Pairing Guide
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-            Primary: Windows 10/11 PCs · Secondary: Android devices with HID Host support
+          <p className="text-xs text-[#667085] dark:text-[#A0A5B1] mb-4">
+            Windows 10/11 PCs and Android hosts supporting HID Host mode
           </p>
 
-          <ol className="space-y-3.5 text-sm">
-            <li className="flex items-start gap-3">
-              <span className="h-6 w-6 rounded-lg bg-blue-600/15 text-blue-600 dark:text-cyan-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
-                1
-              </span>
-              <div>
-                <p className="font-medium text-slate-900 dark:text-white">
-                  Register HID Peripheral
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Calls <code className="font-mono">BluetoothHidDevice.registerApp()</code> with the
-                  combined mouse &amp; keyboard SDP descriptor.
-                </p>
-              </div>
+          <ol className="space-y-3 text-xs sm:text-sm text-[#667085] dark:text-[#A0A5B1]">
+            <li>
+              <strong className="text-[#172033] dark:text-[#F4F5F7]">1. Register HID Peripheral</strong>
+              <p className="text-xs mt-0.5">
+                Registers Mouse, Keyboard, and Media Consumer Control via{' '}
+                <code className="font-mono">BluetoothHidDevice.registerApp()</code>.
+              </p>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="h-6 w-6 rounded-lg bg-blue-600/15 text-blue-600 dark:text-cyan-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
-                2
-              </span>
-              <div>
-                <p className="font-medium text-slate-900 dark:text-white">
-                  Enable Discoverability
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Tap Make Discoverable so your computer can see the phone as an input peripheral.
-                </p>
-              </div>
+            <li>
+              <strong className="text-[#172033] dark:text-[#F4F5F7]">2. Enable Discoverability</strong>
+              <p className="text-xs mt-0.5">
+                Tap Make Discoverable so your computer can detect the phone as an HID peripheral.
+              </p>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="h-6 w-6 rounded-lg bg-blue-600/15 text-blue-600 dark:text-cyan-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
-                3
-              </span>
-              <div>
-                <p className="font-medium text-slate-900 dark:text-white">
-                  Pair from Target Device
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  On Windows, open Bluetooth &amp; devices → Add device → Bluetooth, then confirm
-                  the pairing PIN on both screens.
-                </p>
-              </div>
+            <li>
+              <strong className="text-[#172033] dark:text-[#F4F5F7]">3. Pair from Target Device</strong>
+              <p className="text-xs mt-0.5">
+                Open Bluetooth settings on your PC, add your phone, and confirm the pairing code.
+              </p>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="h-6 w-6 rounded-lg bg-blue-600/15 text-blue-600 dark:text-cyan-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
-                4
-              </span>
-              <div>
-                <p className="font-medium text-slate-900 dark:text-white">
-                  Control Immediately
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Switch to Mouse, Keyboard, or Combined mode. If your PC sleeps, tap Connect on its
-                  entry above.
-                </p>
-              </div>
+            <li>
+              <strong className="text-[#172033] dark:text-[#F4F5F7]">4. Reconnect Anytime</strong>
+              <p className="text-xs mt-0.5">
+                Each host keeps its own saved touchpad, mouse, and keyboard profile automatically.
+              </p>
             </li>
           </ol>
         </section>
       </div>
 
-      {/* Bottom Split: Connection History + Troubleshooting */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <section className="lg:col-span-7 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2">
-              <History className="h-4 w-4 text-blue-600 dark:text-cyan-400" />
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Connection History
-              </h2>
-            </div>
-            {history.length > 0 && (
-              <button
-                type="button"
-                onClick={onClearHistory}
-                className="min-h-[36px] px-3 rounded-lg text-xs font-medium text-slate-500 hover:text-rose-500 flex items-center gap-1.5"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span>Clear</span>
-              </button>
-            )}
+      {/* Connection History */}
+      <section className="rounded-2xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-[#2563EB] dark:text-[#6B9BFF]" />
+            <h2 className="text-base font-semibold text-[#172033] dark:text-[#F4F5F7]">
+              Connection History
+            </h2>
           </div>
-
-          {history.length === 0 ? (
-            <p className="text-xs text-slate-500 dark:text-slate-400 py-4">
-              No Bluetooth HID connection events recorded yet. Real connection attempts on Android
-              will appear here.
-            </p>
-          ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-800/80">
-              {history.map((item) => (
-                <li key={item.id} className="py-3 flex items-center justify-between gap-3 text-xs">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white truncate">
-                      {item.deviceName}
-                    </p>
-                    <p className="font-mono text-slate-500 dark:text-slate-400 tabular-nums">
-                      {item.deviceAddress} · {new Date(item.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                  <span
-                    className={`font-semibold capitalize shrink-0 ${
-                      item.status === 'connected'
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : item.status === 'failed'
-                          ? 'text-rose-600 dark:text-rose-400'
-                          : 'text-slate-500 dark:text-slate-400'
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          {history.length > 0 && (
+            <button
+              type="button"
+              onClick={onClearHistory}
+              className="min-h-[36px] px-3 rounded-lg text-xs font-medium text-[#667085] dark:text-[#A0A5B1] hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1.5"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Clear</span>
+            </button>
           )}
-        </section>
+        </div>
 
-        <section className="lg:col-span-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
-            Troubleshooting Tips
-          </h2>
-          <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            <div className="flex items-start gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" />
-              <p>
-                <strong>Already paired earlier?</strong> Remove the phone from Windows Bluetooth
-                devices first, register HID inside BlueMouse, then re-pair so Windows fetches the
-                new Mouse+Keyboard SDP descriptor.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" />
-              <p>
-                <strong>HID Registration failed?</strong> Some older Android 8 devices or custom
-                OEM ROMs disable the <code className="font-mono">BluetoothHidDevice</code> service.
-                Android 9+ stock or Pixel/Samsung/OnePlus firmware works best.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" />
-              <p>
-                <strong>App backgrounded?</strong> Android may pause background HID transmission.
-                Return to BlueMouse to automatically verify and restore HID registration.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5" />
-              <p>
-                <strong>Android-to-Android pairing?</strong> Not all Android phones enable
-                incoming Bluetooth HID Host mode. Windows 10/11 laptops and desktops support
-                composite Bluetooth HID mouse &amp; keyboard out of the box.
-              </p>
-            </div>
-          </div>
-        </section>
-      </div>
+        {history.length === 0 ? (
+          <p className="text-xs text-[#667085] dark:text-[#A0A5B1] py-2">
+            No Bluetooth HID connection events recorded yet.
+          </p>
+        ) : (
+          <ul className="divide-y divide-[#E5E7EB] dark:divide-[#30343D]">
+            {history.map((item) => (
+              <li key={item.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                <div className="min-w-0">
+                  <p className="font-semibold text-[#172033] dark:text-[#F4F5F7] truncate">
+                    {item.deviceName}
+                  </p>
+                  <p className="font-mono text-[#667085] dark:text-[#A0A5B1] tabular-nums">
+                    {item.deviceAddress} · {new Date(item.timestamp).toLocaleString()}
+                  </p>
+                </div>
+                <span
+                  className={`font-semibold capitalize shrink-0 ${
+                    item.status === 'connected'
+                      ? 'text-emerald-700 dark:text-emerald-400'
+                      : item.status === 'failed'
+                        ? 'text-rose-600 dark:text-rose-400'
+                        : 'text-[#667085] dark:text-[#A0A5B1]'
+                  }`}
+                >
+                  {item.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

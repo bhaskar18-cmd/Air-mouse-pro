@@ -14,6 +14,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.Process
 import androidx.core.content.ContextCompat
 import java.util.concurrent.Executors
 
@@ -32,7 +33,17 @@ class BluetoothHidManager(
         get() = bluetoothManager?.adapter
 
     private val callbackExecutor = Executors.newSingleThreadExecutor()
-    private val reportExecutor = Executors.newSingleThreadExecutor()
+    private val reportExecutor = Executors.newSingleThreadExecutor { runnable ->
+        Thread({
+            try {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY)
+            } catch (_: Throwable) {
+            }
+            runnable.run()
+        }, "BlueMouse-HID-Report").apply {
+            priority = Thread.MAX_PRIORITY
+        }
+    }
     private val mainHandler = Handler(Looper.getMainLooper())
 
     @Volatile
@@ -58,6 +69,21 @@ class BluetoothHidManager(
     var lastError: String? = null
         private set
 
+    @Volatile
+    private var cachedHasPermissions: Boolean = false
+
+    private val mouseQueueLock = Any()
+    private var pendingMouseDx: Int = 0
+    private var pendingMouseDy: Int = 0
+    private var pendingMouseWheel: Int = 0
+    private var pendingMouseHWheel: Int = 0
+    private var pendingMouseButtons: Int = 0
+    private var lastEnqueuedMouseButtons: Int = 0
+    private var hasPendingMouseMove: Boolean = false
+    private var mouseDrainScheduled: Boolean = false
+    private val pendingMouseCallbacks = mutableListOf<(Boolean) -> Unit>()
+    private val mouseReportBuffer = ByteArray(5)
+
     private var pendingRegisterAfterProxy = false
     private var explicitUnregisterInProgress = false
 
@@ -73,7 +99,14 @@ class BluetoothHidManager(
     }
 
     fun hasRequiredPermissions(): Boolean {
-        return getMissingPermissions().isEmpty()
+        val granted = getMissingPermissions().isEmpty()
+        cachedHasPermissions = granted
+        return granted
+    }
+
+    private fun hasPermissionsFast(): Boolean {
+        if (cachedHasPermissions) return true
+        return hasRequiredPermissions()
     }
 
     fun getMissingPermissions(): List<String> {
@@ -152,6 +185,7 @@ class BluetoothHidManager(
                 isRegistering = false
                 connectedDevice = null
                 connectionState = "disconnected"
+                clearPendingMouseMoves()
                 mainHandler.post {
                     listener.onHidRegistrationChanged("unregistered", null)
                     listener.onConnectionStateChanged(
@@ -220,6 +254,7 @@ class BluetoothHidManager(
                         val wasConnecting = connectionState == "connecting"
                         connectedDevice = null
                         connectionState = if (wasConnecting) "failed" else "disconnected"
+                        clearPendingMouseMoves()
                         val reason = if (wasConnecting) {
                             "Host rejected or timed out during HID connection. Ensure Bluetooth is paired and host supports HID input."
                         } else {
@@ -245,6 +280,7 @@ class BluetoothHidManager(
             val emptyReport = when (id.toInt()) {
                 HidReportDescriptor.REPORT_ID_MOUSE -> ByteArray(5)
                 HidReportDescriptor.REPORT_ID_KEYBOARD -> ByteArray(8)
+                HidReportDescriptor.REPORT_ID_CONSUMER -> ByteArray(2)
                 else -> ByteArray(0)
             }
             if (emptyReport.isNotEmpty()) {
@@ -265,6 +301,7 @@ class BluetoothHidManager(
         override fun onVirtualCableUnplug(device: BluetoothDevice?) {
             connectedDevice = null
             connectionState = "disconnected"
+            clearPendingMouseMoves()
             mainHandler.post {
                 listener.onConnectionStateChanged(
                     "disconnected",
@@ -345,8 +382,8 @@ class BluetoothHidManager(
 
         val outQos = BluetoothHidDeviceAppQosSettings(
             BluetoothHidDeviceAppQosSettings.SERVICE_BEST_EFFORT,
-            800,
-            9,
+            4000,
+            64,
             0,
             11250,
             BluetoothHidDeviceAppQosSettings.MAX
@@ -428,32 +465,198 @@ class BluetoothHidManager(
     }
 
     @SuppressLint("MissingPermission")
-    fun sendMouseReport(buttons: Int, dx: Int, dy: Int, wheel: Int, hWheel: Int): Boolean {
-        val proxy = hidDeviceProxy ?: return false
-        val target = connectedDevice ?: return false
-        if (!isAppRegistered || !hasRequiredPermissions() || reportExecutor.isShutdown) return false
+    fun sendMouseReport(
+        buttons: Int,
+        dx: Int,
+        dy: Int,
+        wheel: Int,
+        hWheel: Int,
+        onComplete: ((Boolean) -> Unit)? = null
+    ): Boolean {
+        val proxy = hidDeviceProxy ?: run {
+            onComplete?.invoke(false)
+            return false
+        }
+        val target = connectedDevice ?: run {
+            onComplete?.invoke(false)
+            return false
+        }
+        if (!isAppRegistered || !hasPermissionsFast() || reportExecutor.isShutdown) {
+            onComplete?.invoke(false)
+            return false
+        }
 
-        val report = byteArrayOf(
-            (buttons and 0x07).toByte(),
-            dx.coerceIn(-127, 127).toByte(),
-            dy.coerceIn(-127, 127).toByte(),
-            wheel.coerceIn(-127, 127).toByte(),
-            hWheel.coerceIn(-127, 127).toByte()
-        )
-        reportExecutor.execute {
+        val cleanButtons = buttons and 0x07
+        var dispatchButtonEdge = false
+        var scheduleDrain = false
+
+        synchronized(mouseQueueLock) {
+            if (cleanButtons != lastEnqueuedMouseButtons) {
+                lastEnqueuedMouseButtons = cleanButtons
+                dispatchButtonEdge = true
+            } else {
+                pendingMouseButtons = cleanButtons
+                pendingMouseDx += dx
+                pendingMouseDy += dy
+                pendingMouseWheel += wheel
+                pendingMouseHWheel += hWheel
+                hasPendingMouseMove = true
+                if (onComplete != null) {
+                    pendingMouseCallbacks.add(onComplete)
+                }
+                if (!mouseDrainScheduled) {
+                    mouseDrainScheduled = true
+                    scheduleDrain = true
+                }
+            }
+        }
+
+        if (dispatchButtonEdge) {
+            val edgeReport = byteArrayOf(
+                cleanButtons.toByte(),
+                dx.coerceIn(-127, 127).toByte(),
+                dy.coerceIn(-127, 127).toByte(),
+                wheel.coerceIn(-127, 127).toByte(),
+                hWheel.coerceIn(-127, 127).toByte()
+            )
             try {
-                proxy.sendReport(target, HidReportDescriptor.REPORT_ID_MOUSE, report)
-            } catch (_: SecurityException) {
+                reportExecutor.execute {
+                    // Flush any accumulated pre-click movement first so cursor lands before click
+                    drainCoalescedMouseMove(proxy, target)
+                    var sent = false
+                    try {
+                        sent = proxy.sendReport(target, HidReportDescriptor.REPORT_ID_MOUSE, edgeReport)
+                    } catch (_: SecurityException) {
+                        cachedHasPermissions = false
+                    } finally {
+                        onComplete?.invoke(sent)
+                    }
+                }
+            } catch (_: RuntimeException) {
+                onComplete?.invoke(false)
+                return false
+            }
+            return true
+        }
+
+        if (scheduleDrain) {
+            try {
+                reportExecutor.execute {
+                    drainCoalescedMouseMove(proxy, target)
+                }
+            } catch (_: RuntimeException) {
+                val droppedCallbacks: List<(Boolean) -> Unit>
+                synchronized(mouseQueueLock) {
+                    mouseDrainScheduled = false
+                    hasPendingMouseMove = false
+                    pendingMouseDx = 0
+                    pendingMouseDy = 0
+                    pendingMouseWheel = 0
+                    pendingMouseHWheel = 0
+                    droppedCallbacks = pendingMouseCallbacks.toList()
+                    pendingMouseCallbacks.clear()
+                }
+                droppedCallbacks.forEach { it(false) }
+                return false
             }
         }
         return true
     }
 
     @SuppressLint("MissingPermission")
+    private fun drainCoalescedMouseMove(proxy: BluetoothHidDevice, target: BluetoothDevice) {
+        while (true) {
+            var sendButtons = 0
+            var sendDx = 0
+            var sendDy = 0
+            var sendWheel = 0
+            var sendHWheel = 0
+            var callbacks: List<(Boolean) -> Unit> = emptyList()
+            var hasWork = false
+
+            synchronized(mouseQueueLock) {
+                if (!hasPendingMouseMove) {
+                    mouseDrainScheduled = false
+                    if (pendingMouseCallbacks.isNotEmpty()) {
+                        callbacks = pendingMouseCallbacks.toList()
+                        pendingMouseCallbacks.clear()
+                    }
+                    hasWork = false
+                } else {
+                    sendButtons = pendingMouseButtons
+                    sendDx = pendingMouseDx.coerceIn(-127, 127)
+                    sendDy = pendingMouseDy.coerceIn(-127, 127)
+                    sendWheel = pendingMouseWheel.coerceIn(-127, 127)
+                    sendHWheel = pendingMouseHWheel.coerceIn(-127, 127)
+
+                    pendingMouseDx -= sendDx
+                    pendingMouseDy -= sendDy
+                    pendingMouseWheel -= sendWheel
+                    pendingMouseHWheel -= sendHWheel
+
+                    hasPendingMouseMove =
+                        pendingMouseDx != 0 ||
+                        pendingMouseDy != 0 ||
+                        pendingMouseWheel != 0 ||
+                        pendingMouseHWheel != 0
+
+                    if (!hasPendingMouseMove) {
+                        mouseDrainScheduled = false
+                    }
+                    if (pendingMouseCallbacks.isNotEmpty()) {
+                        callbacks = pendingMouseCallbacks.toList()
+                        pendingMouseCallbacks.clear()
+                    }
+                    hasWork = true
+                }
+            }
+
+            if (!hasWork) {
+                callbacks.forEach { it(true) }
+                return
+            }
+
+            mouseReportBuffer[0] = (sendButtons and 0x07).toByte()
+            mouseReportBuffer[1] = sendDx.toByte()
+            mouseReportBuffer[2] = sendDy.toByte()
+            mouseReportBuffer[3] = sendWheel.toByte()
+            mouseReportBuffer[4] = sendHWheel.toByte()
+
+            var sent = false
+            try {
+                if (isAppRegistered && connectedDevice != null) {
+                    sent = proxy.sendReport(target, HidReportDescriptor.REPORT_ID_MOUSE, mouseReportBuffer)
+                }
+            } catch (_: SecurityException) {
+                cachedHasPermissions = false
+            } finally {
+                callbacks.forEach { it(sent) }
+            }
+        }
+    }
+
+    private fun clearPendingMouseMoves() {
+        val callbacks: List<(Boolean) -> Unit>
+        synchronized(mouseQueueLock) {
+            pendingMouseDx = 0
+            pendingMouseDy = 0
+            pendingMouseWheel = 0
+            pendingMouseHWheel = 0
+            pendingMouseButtons = 0
+            lastEnqueuedMouseButtons = 0
+            hasPendingMouseMove = false
+            mouseDrainScheduled = false
+            callbacks = pendingMouseCallbacks.toList()
+            pendingMouseCallbacks.clear()
+        }
+        callbacks.forEach { it(false) }
+    }
+
+    @SuppressLint("MissingPermission")
     fun sendKeyboardReport(modifiers: Int, keycodes: List<Int>): Boolean {
         val proxy = hidDeviceProxy ?: return false
         val target = connectedDevice ?: return false
-        if (!isAppRegistered || !hasRequiredPermissions() || reportExecutor.isShutdown) return false
+        if (!isAppRegistered || !hasPermissionsFast() || reportExecutor.isShutdown) return false
 
         val report = ByteArray(8)
         report[0] = (modifiers and 0xFF).toByte()
@@ -465,6 +668,28 @@ class BluetoothHidManager(
             try {
                 proxy.sendReport(target, HidReportDescriptor.REPORT_ID_KEYBOARD, report)
             } catch (_: SecurityException) {
+                cachedHasPermissions = false
+            }
+        }
+        return true
+    }
+
+    @SuppressLint("MissingPermission")
+    fun sendConsumerReport(usageCode: Int): Boolean {
+        val proxy = hidDeviceProxy ?: return false
+        val target = connectedDevice ?: return false
+        if (!isAppRegistered || !hasPermissionsFast() || reportExecutor.isShutdown) return false
+
+        val clamped = usageCode.coerceIn(0, 0x03FF)
+        val report = byteArrayOf(
+            (clamped and 0xFF).toByte(),
+            ((clamped shr 8) and 0xFF).toByte()
+        )
+        reportExecutor.execute {
+            try {
+                proxy.sendReport(target, HidReportDescriptor.REPORT_ID_CONSUMER, report)
+            } catch (_: SecurityException) {
+                cachedHasPermissions = false
             }
         }
         return true
@@ -472,19 +697,24 @@ class BluetoothHidManager(
 
     @SuppressLint("MissingPermission")
     private fun releaseAllInputsSync() {
+        clearPendingMouseMoves()
         val proxy = hidDeviceProxy ?: return
         val target = connectedDevice ?: return
-        if (!isAppRegistered || !hasRequiredPermissions()) return
+        if (!isAppRegistered || !hasPermissionsFast()) return
         try {
             proxy.sendReport(target, HidReportDescriptor.REPORT_ID_MOUSE, ByteArray(5))
             proxy.sendReport(target, HidReportDescriptor.REPORT_ID_KEYBOARD, ByteArray(8))
+            proxy.sendReport(target, HidReportDescriptor.REPORT_ID_CONSUMER, ByteArray(2))
         } catch (_: SecurityException) {
+            cachedHasPermissions = false
         }
     }
 
     fun releaseAllInputs() {
+        clearPendingMouseMoves()
         sendMouseReport(0, 0, 0, 0, 0)
         sendKeyboardReport(0, emptyList())
+        sendConsumerReport(0)
     }
 
     fun clearLastError() {

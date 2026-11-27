@@ -67,21 +67,21 @@ export const DEFAULT_TESTING_CHECKLIST: TestingChecklistItem[] = [
   {
     id: 'test-clicks',
     number: 5,
-    title: 'Left and right click',
+    title: 'Left, middle, and right click buttons',
     verificationSteps:
-      'Tap once with one finger (left click), tap with two fingers (right click), and test physical Left/Middle/Right buttons.',
+      'Tap the touchpad surface (confirm no click occurs), then test the dedicated Left Click, Middle Click, and Right Click buttons below the touchpad.',
     expectedResult:
-      'Host registers left clicks, context menus on right click, middle click paste/tab actions, and respects left-handed swap.',
+      'Touchpad taps do nothing; dedicated buttons send accurate HID press and release reports and respect left-handed swap.',
     completed: false,
   },
   {
     id: 'test-double-click',
     number: 6,
-    title: 'Double click & drag-and-drop',
+    title: 'Double click & Drag & Drop Lock',
     verificationSteps:
-      'Double-tap on a desktop icon or word, and long-press (~450ms) then drag to move a window or select text.',
+      'Press the Double Click button on a desktop icon, then enable Drag & Drop Lock, swipe one finger across the touchpad, and turn the lock off.',
     expectedResult:
-      'Host opens the item on double click and maintains left-button hold throughout drag until finger lift.',
+      'Double Click opens the item cleanly; Drag Lock holds the left mouse button during cursor movement and releases it immediately when disabled.',
     completed: false,
   },
   {

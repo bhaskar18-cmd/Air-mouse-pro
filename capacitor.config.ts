@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   android: {
     allowMixedContent: false,
-    backgroundColor: '#050914',
+    backgroundColor: '#111318',
   },
   plugins: {
     Haptics: {

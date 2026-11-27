@@ -93,13 +93,13 @@ function CopyCodeBlock({
   const isCopied = copiedId === id;
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/80 bg-slate-900/70">
-        <span className="text-xs font-medium text-slate-300">{label}</span>
+    <div className="rounded-xl border border-[#30343D] bg-[#16181E] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[#30343D] bg-[#1A1D24]">
+        <span className="text-xs font-medium text-[#A0A5B1]">{label}</span>
         <button
           type="button"
           onClick={() => onCopy(id, code)}
-          className="min-h-[30px] px-2.5 rounded-lg text-xs font-medium text-cyan-300 hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
+          className="min-h-[30px] px-2.5 rounded-lg text-xs font-medium text-[#6B9BFF] hover:bg-[#222630] flex items-center gap-1.5 transition-colors duration-150"
         >
           {isCopied ? (
             <>
@@ -114,7 +114,7 @@ function CopyCodeBlock({
           )}
         </button>
       </div>
-      <pre className="p-4 text-xs font-mono text-slate-100 overflow-x-auto leading-relaxed">
+      <pre className="p-4 text-xs font-mono text-[#F4F5F7] overflow-x-auto leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>
@@ -143,29 +143,31 @@ export function ApkBuildGuideModal({
         setCopiedId((prev) => (prev === id ? null : prev));
       }, 2000);
     } catch {
-      setCopyError('Clipboard access was blocked by your browser. Please select and copy the command manually.');
+      setCopyError(
+        'Clipboard access was blocked by your browser. Please select and copy the command manually.'
+      );
     }
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-3 sm:p-5"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-5"
       role="dialog"
       aria-modal="true"
       aria-labelledby="apk-guide-title"
     >
-      <div className="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+      <div className="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl bg-white dark:bg-[#1A1D24] border border-[#E5E7EB] dark:border-[#30343D] shadow-lg overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between gap-4 px-5 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <div className="flex items-center justify-between gap-4 px-5 sm:px-6 py-4 border-b border-[#E5E7EB] dark:border-[#30343D] shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <BlueMouseLogo size={36} className="shrink-0" />
             <div className="min-w-0">
-              <span className="text-xs font-semibold text-blue-600 dark:text-cyan-400">
+              <span className="text-xs font-semibold text-[#2563EB] dark:text-[#6B9BFF]">
                 Native Android Build &amp; Deployment Guide
               </span>
               <h2
                 id="apk-guide-title"
-                className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate"
+                className="text-lg sm:text-xl font-semibold text-[#172033] dark:text-[#F4F5F7] truncate"
               >
                 {activeStep.title}
               </h2>
@@ -175,7 +177,7 @@ export function ApkBuildGuideModal({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[42px] min-w-[42px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+            className="min-h-[42px] min-w-[42px] flex items-center justify-center rounded-xl text-[#667085] dark:text-[#A0A5B1] hover:text-[#172033] dark:hover:text-[#F4F5F7] hover:bg-[#F7F8FA] dark:hover:bg-[#222630] transition-colors duration-150 shrink-0"
             aria-label="Close Android Build Guide"
           >
             <X className="h-5 w-5" />
@@ -183,7 +185,7 @@ export function ApkBuildGuideModal({
         </div>
 
         {/* Step Navigation Tabs */}
-        <div className="px-5 sm:px-6 py-3 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-[#081020] overflow-x-auto shrink-0">
+        <div className="px-5 sm:px-6 py-3 border-b border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] overflow-x-auto shrink-0">
           <div className="flex items-center gap-2 min-w-max">
             {GUIDE_STEPS.map((step, idx) => {
               const Icon = step.icon;
@@ -193,10 +195,10 @@ export function ApkBuildGuideModal({
                   key={step.id}
                   type="button"
                   onClick={() => setActiveStepIndex(idx)}
-                  className={`min-h-[38px] px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors whitespace-nowrap ${
+                  className={`min-h-[38px] px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors duration-150 whitespace-nowrap ${
                     active
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-[#2563EB] text-white dark:bg-[#6B9BFF] dark:text-[#111318]'
+                      : 'bg-white dark:bg-[#1A1D24] border border-[#E5E7EB] dark:border-[#30343D] text-[#667085] dark:text-[#A0A5B1] hover:text-[#172033] dark:hover:text-[#F4F5F7]'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -211,42 +213,44 @@ export function ApkBuildGuideModal({
 
         {/* Scrollable Step Content */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
-          <p className="text-sm text-slate-600 dark:text-slate-300">{activeStep.subtitle}</p>
+          <p className="text-sm text-[#667085] dark:text-[#A0A5B1]">{activeStep.subtitle}</p>
 
           {copyError && (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-200">
+            <div className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-200">
               {copyError}
             </div>
           )}
 
           {activeStep.id === 'export' && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Download className="h-4 w-4 text-blue-600 dark:text-cyan-400" />
+              <div className="rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-[#172033] dark:text-[#F4F5F7] flex items-center gap-2">
+                  <Download className="h-4 w-4 text-[#2563EB] dark:text-[#6B9BFF]" />
                   <span>Step-by-Step Project Export</span>
                 </h3>
-                <ol className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed">
+                <ol className="space-y-2.5 text-xs sm:text-sm text-[#667085] dark:text-[#A0A5B1] list-decimal list-inside leading-relaxed">
                   <li>
                     Download or export the complete project archive from AI Studio (or clone your
-                    connected repository) to a local folder such as <code className="font-mono">bluemouse/</code>.
+                    connected repository) to a local folder such as{' '}
+                    <code className="font-mono text-[#172033] dark:text-[#F4F5F7]">bluemouse/</code>.
                   </li>
                   <li>
                     Verify that all root configuration, React frontend, and native Android files are
                     present before installing dependencies.
                   </li>
                   <li>
-                    Ensure <strong>Node.js 20+</strong> and <strong>npm 10+</strong> are installed on
+                    Ensure <strong className="text-[#172033] dark:text-[#F4F5F7]">Node.js 20+</strong> and{' '}
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">npm 10+</strong> are installed on
                     your workstation.
                   </li>
                 </ol>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-2">
-                <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+              <div className="rounded-xl border border-[#E5E7EB] dark:border-[#30343D] p-4 space-y-2">
+                <h4 className="text-xs font-semibold text-[#172033] dark:text-[#F4F5F7]">
                   Required Project Tree Checklist
                 </h4>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-600 dark:text-slate-300">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-[#667085] dark:text-[#A0A5B1]">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                     <span>package.json &amp; capacitor.config.ts</span>
@@ -278,7 +282,7 @@ export function ApkBuildGuideModal({
 
           {activeStep.id === 'capacitor' && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              <div className="rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] p-4 space-y-2.5 text-xs sm:text-sm text-[#667085] dark:text-[#A0A5B1] leading-relaxed">
                 <p>
                   BlueMouse already includes <code className="font-mono">@capacitor/core</code>,{' '}
                   <code className="font-mono">@capacitor/cli</code>,{' '}
@@ -306,7 +310,7 @@ export function ApkBuildGuideModal({
               <CopyCodeBlock
                 id="cfg-cap-ts"
                 label="capacitor.config.ts (already configured)"
-                code={`import type { CapacitorConfig } from '@capacitor/cli';\n\nconst config: CapacitorConfig = {\n  appId: 'com.bluemouse.app',\n  appName: 'BlueMouse',\n  webDir: 'dist',\n  android: {\n    allowMixedContent: false,\n    backgroundColor: '#050914',\n  },\n};\n\nexport default config;`}
+                code={`import type { CapacitorConfig } from '@capacitor/cli';\n\nconst config: CapacitorConfig = {\n  appId: 'com.bluemouse.app',\n  appName: 'BlueMouse',\n  webDir: 'dist',\n  android: {\n    allowMixedContent: false,\n    backgroundColor: '#111318',\n  },\n};\n\nexport default config;`}
                 copiedId={copiedId}
                 onCopy={handleCopy}
               />
@@ -315,21 +319,22 @@ export function ApkBuildGuideModal({
 
           {activeStep.id === 'studio' && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Laptop className="h-4 w-4 text-blue-600 dark:text-cyan-400" />
+              <div className="rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-[#172033] dark:text-[#F4F5F7] flex items-center gap-2">
+                  <Laptop className="h-4 w-4 text-[#2563EB] dark:text-[#6B9BFF]" />
                   <span>Android Studio &amp; SDK Requirements</span>
                 </h3>
-                <ol className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed">
+                <ol className="space-y-2.5 text-xs sm:text-sm text-[#667085] dark:text-[#A0A5B1] list-decimal list-inside leading-relaxed">
                   <li>
-                    Install <strong>Android Studio</strong> (Ladybug or newer) with{' '}
-                    <strong>JDK 21</strong> selected under{' '}
+                    Install <strong className="text-[#172033] dark:text-[#F4F5F7]">Android Studio</strong> (Ladybug or newer) with{' '}
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">JDK 21</strong> selected under{' '}
                     <em>Settings → Build, Execution, Deployment → Build Tools → Gradle</em>.
                   </li>
                   <li>
-                    Open <strong>SDK Manager</strong> and install{' '}
-                    <strong>Android SDK Platform 36</strong>, <strong>Android SDK Build-Tools</strong>,
-                    and <strong>Platform-Tools (adb)</strong>.
+                    Open <strong className="text-[#172033] dark:text-[#F4F5F7]">SDK Manager</strong> and install{' '}
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">Android SDK Platform 36</strong>,{' '}
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">Android SDK Build-Tools</strong>,
+                    and <strong className="text-[#172033] dark:text-[#F4F5F7]">Platform-Tools (adb)</strong>.
                   </li>
                   <li>
                     Note <code className="font-mono">minSdkVersion = 28</code> (Android 9.0 Pie),
@@ -337,8 +342,9 @@ export function ApkBuildGuideModal({
                     in API 28.
                   </li>
                   <li>
-                    On your physical Android phone, enable <strong>Developer Options</strong> and{' '}
-                    <strong>USB Debugging</strong>. (Android Emulators cannot emulate physical
+                    On your physical Android phone, enable{' '}
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">Developer Options</strong> and{' '}
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">USB Debugging</strong>. (Android Emulators cannot emulate physical
                     Bluetooth HID hardware.)
                   </li>
                 </ol>
@@ -356,21 +362,23 @@ export function ApkBuildGuideModal({
 
           {activeStep.id === 'kotlin' && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              <div className="rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-[#172033] dark:text-[#F4F5F7]">
                   Native Kotlin HID Files Included in <code className="font-mono">android/</code>
                 </h3>
-                <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <ul className="space-y-2 text-xs sm:text-sm text-[#667085] dark:text-[#A0A5B1] leading-relaxed">
                   <li>
-                    <code className="font-mono text-blue-600 dark:text-cyan-400">
+                    <code className="font-mono text-[#2563EB] dark:text-[#6B9BFF]">
                       HidReportDescriptor.kt
                     </code>{' '}
-                    — Composite HID SDP descriptor defining Report ID <code className="font-mono">1</code>{' '}
-                    (3-button mouse, X, Y, vertical wheel, horizontal AC pan) and Report ID{' '}
-                    <code className="font-mono">2</code> (6-key rollover US keyboard + modifiers).
+                    — Composite HID SDP descriptor defining Report ID{' '}
+                    <code className="font-mono">1</code> (3-button mouse, X, Y, vertical wheel,
+                    horizontal AC pan), Report ID <code className="font-mono">2</code> (6-key
+                    rollover US keyboard + modifiers), and Report ID{' '}
+                    <code className="font-mono">3</code> (Consumer Media Control).
                   </li>
                   <li>
-                    <code className="font-mono text-blue-600 dark:text-cyan-400">
+                    <code className="font-mono text-[#2563EB] dark:text-[#6B9BFF]">
                       BluetoothHidManager.kt
                     </code>{' '}
                     — Obtains <code className="font-mono">BluetoothProfile.HID_DEVICE</code> proxy,
@@ -382,21 +390,23 @@ export function ApkBuildGuideModal({
                     <code className="font-mono">BluetoothHidDevice.Callback</code>.
                   </li>
                   <li>
-                    <code className="font-mono text-blue-600 dark:text-cyan-400">
+                    <code className="font-mono text-[#2563EB] dark:text-[#6B9BFF]">
                       BluetoothHIDPlugin.kt
                     </code>{' '}
-                    — Capacitor plugin (<code className="font-mono">@CapacitorPlugin(name = "BluetoothHID")</code>)
+                    — Capacitor plugin (
+                    <code className="font-mono">@CapacitorPlugin(name = &quot;BluetoothHID&quot;)</code>)
                     handling Android 12+ (<code className="font-mono">BLUETOOTH_CONNECT</code>,{' '}
                     <code className="font-mono">BLUETOOTH_SCAN</code>,{' '}
                     <code className="font-mono">BLUETOOTH_ADVERTISE</code>) and legacy runtime
                     permissions plus pause/resume key release.
                   </li>
                   <li>
-                    <code className="font-mono text-blue-600 dark:text-cyan-400">
+                    <code className="font-mono text-[#2563EB] dark:text-[#6B9BFF]">
                       MainActivity.kt
                     </code>{' '}
-                    — Registers <code className="font-mono">BluetoothHIDPlugin::class.java</code>{' '}
-                    before <code className="font-mono">super.onCreate(savedInstanceState)</code>.
+                    — Registers{' '}
+                    <code className="font-mono">BluetoothHIDPlugin::class.java</code> before{' '}
+                    <code className="font-mono">super.onCreate(savedInstanceState)</code>.
                   </li>
                 </ul>
               </div>
@@ -413,27 +423,25 @@ export function ApkBuildGuideModal({
 
           {activeStep.id === 'apk' && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#081020] p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Smartphone className="h-4 w-4 text-blue-600 dark:text-cyan-400" />
+              <div className="rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-[#172033] dark:text-[#F4F5F7] flex items-center gap-2">
+                  <Smartphone className="h-4 w-4 text-[#2563EB] dark:text-[#6B9BFF]" />
                   <span>Generate &amp; Install APK</span>
                 </h3>
-                <ol className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed">
+                <ol className="space-y-2.5 text-xs sm:text-sm text-[#667085] dark:text-[#A0A5B1] list-decimal list-inside leading-relaxed">
                   <li>
-                    <strong>Android Studio UI</strong>: Click{' '}
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">Android Studio UI</strong>: Click{' '}
                     <em>Build → Build App(s) / APK(s) → Build APK(s)</em> for a debug build, or{' '}
                     <em>Build → Generate Signed App Bundle / APK</em> for a signed release APK.
                   </li>
                   <li>
-                    <strong>Gradle CLI</strong>: Run the commands below inside the{' '}
-                    <code className="font-mono">android/</code> directory (make sure Gradle wrapper
-                    is initialized via Android Studio first if <code className="font-mono">gradlew</code>{' '}
-                    is not yet generated).
+                    <strong className="text-[#172033] dark:text-[#F4F5F7]">Gradle CLI</strong>: Run the commands below inside the{' '}
+                    <code className="font-mono">android/</code> directory.
                   </li>
                   <li>
                     Install onto your connected Android 9+ phone via{' '}
                     <code className="font-mono">adb install</code>, grant Bluetooth permissions,
-                    register the HID profile, and pair with your Windows PC!
+                    register the HID profile, and pair with your Windows PC or Android host.
                   </li>
                 </ol>
               </div>
@@ -446,8 +454,8 @@ export function ApkBuildGuideModal({
                 onCopy={handleCopy}
               />
 
-              <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs sm:text-sm text-blue-900 dark:text-cyan-100">
+              <div className="rounded-xl border border-[#2563EB]/30 dark:border-[#6B9BFF]/35 bg-[#EFF4FF] dark:bg-[#232A38] p-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs sm:text-sm text-[#172033] dark:text-[#F4F5F7]">
                   Ready to verify on your smartphone? Open the 12-item Physical Device Testing
                   Checklist in Settings.
                 </p>
@@ -457,7 +465,7 @@ export function ApkBuildGuideModal({
                     onClose();
                     onOpenChecklist();
                   }}
-                  className="min-h-[40px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold whitespace-nowrap"
+                  className="min-h-[40px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] text-white dark:text-[#111318] text-xs font-semibold whitespace-nowrap transition-colors duration-150"
                 >
                   Open Testing Checklist
                 </button>
@@ -467,8 +475,8 @@ export function ApkBuildGuideModal({
         </div>
 
         {/* Footer Controls */}
-        <div className="flex items-center justify-between gap-3 px-5 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#081020] shrink-0">
-          <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+        <div className="flex items-center justify-between gap-3 px-5 sm:px-6 py-4 border-t border-[#E5E7EB] dark:border-[#30343D] bg-[#F7F8FA] dark:bg-[#111318] shrink-0">
+          <span className="text-xs text-[#667085] dark:text-[#A0A5B1] tabular-nums">
             Step {activeStepIndex + 1} of {GUIDE_STEPS.length}
           </span>
 
@@ -477,7 +485,7 @@ export function ApkBuildGuideModal({
               type="button"
               disabled={activeStepIndex === 0}
               onClick={() => setActiveStepIndex((i) => Math.max(0, i - 1))}
-              className="min-h-[40px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1221] disabled:opacity-40 text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1"
+              className="min-h-[40px] px-3.5 rounded-xl border border-[#E5E7EB] dark:border-[#30343D] bg-white dark:bg-[#1A1D24] disabled:opacity-40 text-xs font-semibold text-[#172033] dark:text-[#F4F5F7] flex items-center gap-1 transition-colors duration-150"
             >
               <ChevronLeft className="h-4 w-4" />
               <span>Previous</span>
@@ -489,7 +497,7 @@ export function ApkBuildGuideModal({
                 onClick={() =>
                   setActiveStepIndex((i) => Math.min(GUIDE_STEPS.length - 1, i + 1))
                 }
-                className="min-h-[40px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1"
+                className="min-h-[40px] px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#6B9BFF] dark:hover:bg-[#82ABFF] text-white dark:text-[#111318] text-xs font-semibold flex items-center gap-1 transition-colors duration-150"
               >
                 <span>Next Step</span>
                 <ChevronRight className="h-4 w-4" />
@@ -498,7 +506,7 @@ export function ApkBuildGuideModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="min-h-[40px] px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
+                className="min-h-[40px] px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors duration-150"
               >
                 Done
               </button>

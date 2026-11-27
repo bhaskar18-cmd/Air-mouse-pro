@@ -55,7 +55,7 @@ export function useBluetoothHid(
   }));
   const [pairedDevices, setPairedDevices] = useState<PairedBluetoothDevice[]>([]);
   const [history, setHistory] = useState<ConnectionHistoryEntry[]>(() => loadConnectionHistory());
-  const [diagnostics, setDiagnostics] = useState<HidPacketDiagnostic[]>([]);
+  const [diagnostics] = useState<HidPacketDiagnostic[]>([]);
   const [isBusy, setIsBusy] = useState(false);
 
   const settingsRef = useRef(settings);
@@ -78,10 +78,6 @@ export function useBluetoothHid(
 
   useEffect(() => {
     void refreshState();
-
-    const unsubDiag = bluetoothService.subscribeDiagnostics((diag) => {
-      setDiagnostics((prev) => [diag, ...prev].slice(0, 20));
-    });
 
     let pluginListeners: PluginListenerHandle[] = [];
     let appListeners: PluginListenerHandle[] = [];
@@ -234,7 +230,6 @@ export function useBluetoothHid(
     }
 
     return () => {
-      unsubDiag();
       pluginListeners.forEach((h) => void h.remove());
       appListeners.forEach((h) => void h.remove());
     };
